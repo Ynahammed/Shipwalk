@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { DemoTag } from "@/components/DemoTag";
 import { PrintButton } from "@/components/PrintButton";
 import { ScoreDial } from "@/components/ScoreDial";
+import { agenda, workshop } from "@/lib/config";
 import { getRegistrant, getSubmission } from "@/lib/data";
 import type { Evaluation } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
@@ -115,7 +116,7 @@ export default async function CertificatePage({
   const certificateId = submission.certificate_id ?? `SW-26-${String(registrant.id).padStart(4, "0")}`;
   const certificateText =
     evaluation?.certificate_text ??
-    `Built ${submission.project_title} and shipped it during ShipWeek.`;
+    `Built ${submission.project_title} as a first AI project in ShipWeek's 60-minute build.`;
   const score = submission.final_score ?? submission.score ?? evaluation?.score ?? null;
 
   return (
@@ -150,7 +151,7 @@ export default async function CertificatePage({
 
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="eyebrow">ShipWeek '26</p>
-              <p className="eyebrow text-ink-faint">Certificate of completion</p>
+              <p className="eyebrow text-ink-faint">60-minute AI build · Certificate of completion</p>
             </div>
 
             <div className="mt-10 text-center sm:mt-14">
@@ -163,7 +164,7 @@ export default async function CertificatePage({
               </p>
 
               <p className="mt-8 text-[10px] font-semibold uppercase tracking-[0.28em] text-ink-faint">
-                has shipped a project called
+                has built and deployed a first AI project called
               </p>
               <h2 className="display mx-auto mt-3 max-w-[760px] text-[clamp(28px,4.6vw,44px)] italic text-accent">
                 {submission.project_title}
@@ -171,6 +172,24 @@ export default async function CertificatePage({
               <p className="mx-auto mt-4 max-w-[620px] text-[12px] leading-relaxed text-ink-soft">
                 {certificateText}
               </p>
+
+              <div className="mx-auto mt-8 max-w-[780px] border-t border-line pt-5">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.24em] text-ink-faint">
+                  Completed the 60-minute AI build
+                </p>
+                <div className="mt-3 grid gap-3 text-left sm:grid-cols-4">
+                  {agenda.map((block) => (
+                    <div key={block.title} className="border-l-2 border-accent pl-3">
+                      <p className="mono text-[8.5px] uppercase tracking-[0.1em] text-accent">
+                        {block.window}
+                      </p>
+                      <p className="mt-1 text-[10.5px] font-semibold leading-snug">
+                        {block.title}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
 
             <div className="mt-10 grid gap-6 border-t border-line pt-6 sm:grid-cols-[1fr_1fr_1.2fr] sm:items-end">
@@ -193,7 +212,7 @@ export default async function CertificatePage({
                 <p className="mt-1 text-[12px] font-medium">
                   {formatDate(submission.reviewed_at ?? submission.created_at)}
                 </p>
-                <p className="mt-0.5 text-[10px] text-ink-faint">Workshop: 6–8 Nov 2026</p>
+                <p className="mt-0.5 text-[10px] text-ink-faint">Session: {workshop.dates}</p>
               </div>
 
               <div className="sm:text-right">

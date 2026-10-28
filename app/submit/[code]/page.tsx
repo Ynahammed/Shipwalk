@@ -42,7 +42,7 @@ export default async function SubmitPage({
           <Link href="/" className="flex items-baseline gap-2">
             <span className="display text-[28px] leading-none">ShipWeek</span>
             <span className="hidden text-[9px] font-semibold uppercase tracking-[0.18em] text-ink-faint sm:inline">
-              Workshop day
+              Submission
             </span>
           </Link>
           <Link
@@ -121,14 +121,14 @@ export default async function SubmitPage({
         ) : (
           <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
             <div>
-              <p className="eyebrow text-accent">Workshop day</p>
+              <p className="eyebrow text-accent">After the session</p>
               <h1 className="display mt-3 text-[clamp(48px,7vw,80px)]">
-                Submit the thing you shipped.
+                Submit the thing you built.
               </h1>
               <p className="mt-4 max-w-[480px] text-[14.5px] leading-relaxed text-ink-soft">
-                A deployed link, one paragraph about the problem and the loop, and you're
-                done. The AI gives you a baseline review; the organiser reads the project,
-                sets the score you keep, and issues the certificate.
+                Your deployed URL and one paragraph on what the AI does, and you're done. The
+                AI gives you a baseline review; the organiser reads the project, sets the score
+                you keep, and issues the certificate.
               </p>
 
               <div className="mt-7 rounded-lg border border-line bg-[#fffdf7] p-4">
@@ -149,9 +149,9 @@ export default async function SubmitPage({
                 <ul className="mt-3 space-y-2.5">
                   {[
                     "A link that opens without a login and works on a phone.",
-                    "One core loop, described in plain language.",
-                    "Any real evidence: testers, waitlist, a pilot, a number.",
-                    "The stack, only if it helps explain what you built.",
+                    "What the model does: the input, the prompt, the output.",
+                    "What you changed from the starter, in plain language.",
+                    "Anything you tested live — one friend opening it is evidence.",
                   ].map((line) => (
                     <li key={line} className="flex gap-2.5">
                       <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#2c8a57]" />

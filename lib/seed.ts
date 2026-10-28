@@ -69,78 +69,78 @@ const DEMO_YEARS = ["Final year", "Final year", "Final year", "Final year", "Fin
 const DEMO_SUBMISSIONS = [
   {
     registrantId: 24,
-    title: "CampusBus — live shuttle tracking",
-    url: "https://campusbus-demo.example.com",
+    title: "MessMenu AI — hostel mess planner",
+    url: "https://messmenu-demo.example.com",
     description:
-      "A live college shuttle tracker with route ETAs, a driver view and a Telegram alert when the bus leaves the main gate. Built with Next.js, Supabase Realtime and Leaflet. Tested with 40 students for a week.",
+      "Paste the hostel mess menu for the week and get a shopping list grouped by vendor, with items that repeat across days called out. One server route calls a hosted LLM with a strict JSON schema and the page renders three cards. Built with Next.js on Cloudflare Workers in the session.",
     score: 88,
     feedback: {
       score: 88,
       strengths: [
-        "Solves a daily, visible campus problem rather than a generic CRUD tutorial.",
-        "Has a real deployment and a small set of actual users.",
-        "Realtime ETA is the feature people would open twice a day.",
+        "Solves a real weekly chore instead of wrapping a generic chatbot.",
+        "The prompt returns validated JSON, so the list never renders half a sentence.",
+        "Deployed in the session and demoable in one screenshot.",
       ],
-      next_step: "Add an offline-safe cached timetable and one photo of the shuttle stop before the showcase.",
+      next_step: "Add the before/after of your first prompt so the reviewer can see what you fixed.",
       certificate_text:
-        "Built CampusBus, a realtime campus shuttle tracker, and shipped it to a working deployment during ShipWeek.",
+        "Built MessMenu AI as a first AI project in ShipWeek's 60-minute build and shipped it to a live URL.",
     },
   },
   {
     registrantId: 61,
-    title: "MessMate — hostel mess forecasting",
-    url: "https://messmate-demo.example.com",
+    title: "DeadlineDecoder — syllabus to deadline table",
+    url: "https://deadlinedecoder-demo.example.com",
     description:
-      "Predicts how many plates each hostel mess should prepare using attendance history and exam calendars. Admin dashboard shows waste per day and an SMS-style headcount for the cook. Python, FastAPI, Postgres, simple regression model.",
+      "Paste a syllabus PDF's text and get one table of deliverables and dates, plus which item to start tonight. The system prompt forces a strict JSON schema and the app drops any row without a parseable date instead of inventing one. Next.js and a hosted LLM, deployed during the session.",
     score: 82,
     feedback: {
       score: 82,
       strengths: [
-        "Clear cost and waste angle that a hostel office would actually pay attention to.",
-        "The model is simple and explainable, which is the right call for a 3-day build.",
-        "Dashboard shows the number a mess manager can act on tomorrow morning.",
+        "The extraction task is genuinely useful before exam week.",
+        "Rejecting unparseable dates is the right call for a 60-minute build.",
+        "The result is a table someone would screenshot and send to friends.",
       ],
-      next_step: "Connect the forecast to a real week of mess data instead of the seeded sample.",
+      next_step: "Handle a syllabus with no dates by asking the model for a confidence flag instead of a guess.",
       certificate_text:
-        "Built MessMate, a mess-demand forecasting tool that turns attendance history into a daily plate count.",
+        "Built DeadlineDecoder, which turns a messy syllabus into one deadline table, in ShipWeek's 60-minute AI build.",
     },
   },
   {
     registrantId: 97,
-    title: "PlacePrep AI — mock interview coach",
-    url: "https://placeprep-demo.example.com",
+    title: "ReplyCoach — three replies to one message",
+    url: "https://replycoach-demo.example.com",
     description:
-      "A browser-based mock interview coach for final-year students. Pick a role, answer five questions by voice, and get a scored transcript with filler-word counts and a better sample answer. Next.js, Web Speech API, LLM feedback.",
+      "Paste a message you are nervous about — a recruiter, a professor, a landlord — and get three replies at different levels of formality plus one line on what the sender wants. Next.js with one server-side model call; the system prompt fixes the three tones and returns JSON so the tabs never break.",
     score: 91,
     feedback: {
       score: 91,
       strengths: [
-        "Directly targets the placement anxiety the workshop is about.",
-        "Voice input plus a scored transcript is a complete loop, not a chat window.",
-        "The sample answer rewrite is the shareable part; it is what students send to friends.",
+        "Tone control is the actual engineering here, not the chat window.",
+        "Three fixed tones make a clean, demoable interface in one screen.",
+        "The output is immediately shareable, which is what makes it memorable.",
       ],
-      next_step: "Add a role-specific question bank and let students replay one answer before scoring.",
+      next_step: "Add a length cap per reply so a long model answer cannot push the buttons off screen.",
       certificate_text:
-        "Built PlacePrep AI, a voice mock-interview coach that scores answers and rewrites the weakest one.",
+        "Built ReplyCoach, a tone-controlled reply writer, as a first AI project in ShipWeek's 60-minute build.",
     },
   },
   {
     registrantId: 142,
-    title: "SplitSet — UPI bill splitting for flats",
-    url: "https://splitset-demo.example.com",
+    title: "ErrorPlain — stack trace in plain English",
+    url: "https://errorplain-demo.example.com",
     description:
-      "Bill splitting for student flats: upload a receipt, assign items, and get one UPI request per roommate. Stores recurring rent and wifi splits. Built with React, Node and Postgres. 12 flats on the waitlist.",
+      "Paste a stack trace and get the likely cause in plain English, three ranked fixes and the one line of the trace that matters. The prompt must quote the failing frame and return JSON; totals and ordering are computed in code. Built with Next.js and Groq during the session and opened to two friends.",
     score: 76,
     feedback: {
       score: 76,
       strengths: [
-        "The one-tap UPI request is a real convenience over typing amounts into a group chat.",
-        "Recurring rent and wifi gives it a reason to be reopened every month.",
-        "You already have a waitlist, which is stronger evidence than a nice UI.",
+        "Grounded answers that quote the pasted trace beat generic debugging advice.",
+        "Ranking the fixes gives the page a clear visual hierarchy.",
+        "Two real users already ran their own errors through it.",
       ],
-      next_step: "Finish the receipt-splitting flow end to end; the waitlist will forgive rough edges if that works.",
+      next_step: "Add a copy button per fix; the current page makes people retype the command.",
       certificate_text:
-        "Built SplitSet, a UPI-native bill splitter for student flats, and opened it to a 12-flat waitlist.",
+        "Built ErrorPlain, which explains a stack trace in plain English, in ShipWeek's 60-minute AI build.",
     },
   },
 ];

@@ -1,7 +1,13 @@
 import type { AdminOverview } from "@/lib/types";
 import { percent } from "@/lib/utils";
 
-export function FunnelBars({ funnel }: { funnel: AdminOverview["funnel"] }) {
+export function FunnelBars({
+  funnel,
+  simulated = false,
+}: {
+  funnel: AdminOverview["funnel"];
+  simulated?: boolean;
+}) {
   const steps = [
     { label: "Landing visits", value: funnel.visits, tone: "ink" },
     { label: "Ideas generated", value: funnel.ideas, tone: "ink" },
@@ -36,9 +42,19 @@ export function FunnelBars({ funnel }: { funnel: AdminOverview["funnel"] }) {
       </div>
 
       <div className="mt-4 border-t border-line pt-2.5 text-[9.5px] leading-relaxed text-ink-faint">
-        The funnel above uses {funnel.liveVisits.toLocaleString("en-IN")} live visits only.
-        {funnel.demoVisits.toLocaleString("en-IN")} seeded demo visits are excluded as preview examples.
-        Percentages use live landing visits as their denominator.
+        {simulated ? (
+          <>
+            The funnel above uses {funnel.liveVisits.toLocaleString("en-IN")} simulated visits from
+            the generated campaign. No real visitor is included, and the public site shows the same
+            banner. Percentages use simulated landing visits as their denominator.
+          </>
+        ) : (
+          <>
+            The funnel above uses {funnel.liveVisits.toLocaleString("en-IN")} live visits only.
+            {funnel.demoVisits.toLocaleString("en-IN")} seeded demo visits are excluded as preview
+            examples. Percentages use live landing visits as their denominator.
+          </>
+        )}
       </div>
     </div>
   );

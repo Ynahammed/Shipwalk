@@ -142,14 +142,14 @@ export default async function ThankYouPage({
                   Your seat is held for {registrant.college}. {confirmationMethod === "email"
                     ? "Your email is confirmed — "
                     : "Your signup is confirmed, but email ownership is unverified — "}
-                  send your link to two people who would actually build something, and
-                  block three evenings for {registrant.branch}.
+                  send your link to two people who would actually build something, and block
+                  one hour on Saturday for {registrant.branch}.
                 </>
               ) : (
                 <>
                   Your seat is held for {registrant.college}. Now make it count: confirm
                   your email, send your link to two people who would actually build
-                  something, and block three evenings for {registrant.branch}.
+                  something, and block one hour on Saturday for {registrant.branch}.
                 </>
               )}
             </p>
@@ -283,12 +283,12 @@ export default async function ThankYouPage({
                     body: "The share studio has three messages ready. Edit one and send it.",
                   },
                   {
-                    title: "Build on day 1",
-                    body: "Ship the smallest version of your core loop and deploy it early.",
+                    title: "Block the hour",
+                    body: "The session starts at 11:00 AM IST on 7 Nov and runs minute by minute. Setup happens live, so arrive with a laptop.",
                   },
                   {
-                    title: "Submit on day 3",
-                    body: "Paste the link for an AI baseline review. The organiser sets the final score and issues the certificate.",
+                    title: "Build, deploy, submit",
+                    body: "You deploy in the 35–50 minute block and paste the link straight away. The AI gives a baseline; the organiser sets the final score and issues the certificate.",
                   },
                 ].map((item, index) => (
                   <li key={item.title} className="flex gap-3">
@@ -337,7 +337,7 @@ export default async function ThankYouPage({
             </div>
 
             <div className="card-flat p-5">
-              <p className="eyebrow text-ink-faint">Workshop day</p>
+              <p className="eyebrow text-ink-faint">Session</p>
               {submission ? (
                 <>
                   <h2 className="display mt-1.5 text-[28px] leading-none">
@@ -367,7 +367,8 @@ export default async function ThankYouPage({
                     Submit the thing you ship.
                   </h2>
                   <p className="mt-2 text-[11.5px] leading-relaxed text-ink-soft">
-                    The form opens now. Submit after you deploy, before the end of day 3.
+                    The form opens now and stays open for 24 hours after the session. Submit
+                    right after you deploy.
                   </p>
                   <Link
                     href={`/submit/${registrant.ref_code}`}
@@ -377,6 +378,12 @@ export default async function ThankYouPage({
                   </Link>
                 </>
               )}
+
+              <p className="mt-3 border-t border-line pt-3 text-[10px] leading-relaxed text-ink-faint">
+                This page is live: refresh it to see the review result. Lost the link? Find it
+                again at <Link href="/status" className="font-semibold text-accent hover:underline">/status</Link>{" "}
+                with your email and mobile number.
+              </p>
             </div>
 
             <p className="px-1 text-[10px] leading-relaxed text-ink-faint">

@@ -17,13 +17,13 @@ const instrument = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: "ShipWeek — leave with a deployed project",
+  title: "ShipWeek — build your first AI project in 60 minutes",
   description:
-    "A free 3-day build sprint for final-year students. Generate a project worth shipping, claim a seat, and leave with a live link, an AI review and a certificate.",
+    "A free 60-minute AI build. No prior AI experience required: call a real LLM API, deploy a working project, and leave with a live link, an AI review and a certificate.",
   openGraph: {
-    title: "ShipWeek — leave with a deployed project",
+    title: "ShipWeek — build your first AI project in 60 minutes",
     description:
-      "Generate a project idea you actually want to build, then ship it in 3 days. 500 seats. Free.",
+      "One hour, one AI project, one live URL for your resume. 500 seats. Free.",
     type: "website",
   },
 };

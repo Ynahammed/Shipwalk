@@ -20,14 +20,14 @@ const DEFAULT_MODEL = "openai/gpt-oss-20b";
 
 // Rotated per request so repeated clicks do not return the same project.
 const ANGLES = [
-  "turn a repeated group decision into a fast vote with a visible result",
-  "help someone practise a skill and see progress across sessions",
-  "make a shared resource's availability visible before someone travels",
-  "replace a paper log with a live record that saves someone money",
-  "help a small local business see something they currently guess",
-  "turn scattered messages into one ranked list",
-  "measure something personal over weeks and show the trend",
-  "cut waste of money, food, or electricity where it is currently invisible",
+  "turn a wall of messy text into a ranked, actionable list",
+  "rewrite one message for a specific audience and explain why it works",
+  "extract structured fields from an unstructured document or message",
+  "explain a dense paragraph at three levels of difficulty",
+  "compare two options against stated criteria and pick one",
+  "turn a rough idea into a step-by-step plan with time estimates",
+  "find what is missing from a draft and ask the questions a reviewer would",
+  "convert a timetable, menu or ledger into a plain-language summary",
 ];
 
 // Strict schemas are enforced by Groq's constrained decoding. Every field is
@@ -318,24 +318,24 @@ export async function generateIdea(
   interest: string,
 ): Promise<{ data: Idea; source: AiSource; model: string | null; error?: string }> {
   const fallback = fallbackIdea(branch, interest);
-  const system = `You are the project scout for ShipWeek, a free 3-day build sprint for final-year Indian college students. Output exactly one project that a single student can build and deploy in three evenings (~3 hours each), then defend in a placement interview.
+  const system = `You are the project scout for ShipWeek, a free 60-minute AI build session for Indian college students who have never called an AI API. Output exactly one first-AI-project that a single beginner can build and deploy inside the hour, then talk about in a placement interview.
 
-THE STACK IS FIXED. Every idea runs on Next.js (App Router, TypeScript) + Tailwind deployed to Cloudflare Workers, with Cloudflare D1 when it must save data, plus browser APIs and at most one free, no-card external API. Never suggest Python, Flask/FastAPI, Streamlit, Django, Docker, Heroku (its free tier is gone), Firebase, Supabase, native iOS/Android builds, or training/fine-tuning a model. For Mechanical/Civil/Electrical branches, still use this web stack on a problem from that field — never invent hardware the student does not own.
+THE STACK IS FIXED. Every idea is one Next.js (App Router, TypeScript) + Tailwind page deployed to Cloudflare Workers, with at most one server-side call to a hosted OpenAI-compatible LLM (Groq). No database, no accounts, no payments, no background jobs, no agents, no vector store, no fine-tuning. Never suggest Python, Streamlit, Flask/FastAPI, Django, Docker, Heroku (its free tier is gone), Firebase, Supabase, native iOS/Android builds, or anything that needs a GPU or a paid API.
 
-SCOPE BUDGET: one core loop, at most three screens, no accounts needed for the demo path, no admin panel, no payments, no real-time collaboration. A visitor must reach the core loop without signing up. The idea must involve something that changes over time — a queue, a schedule, a history, a running total — so it is never a one-shot calculator.
+SESSION BUDGET: input box -> one system prompt -> one model call -> one rendered result. The input must be text the student can paste (notes, a menu, a message, a job description), pre-filled with a sample so the demo works instantly. The output must be worth screenshotting: a ranked list, a structured plan, a rewritten message, a score with reasons. No multi-page navigation, no persistence, no auth.
 
 SPECIFICITY CONTRACT:
-- Decide the exact user and the moment they open it ("a final-year student the night before a placement shortlist"), but keep that framing out of the pitch.
-- pitch: at most 2 sentences describing the product itself — what the user does in one action and what they get back. Never open with "A final-year student..." and never describe a persona wanting something. Never "an AI platform for X" or "a dashboard for Y".
-- The core loop must produce something worth looking at: a ranking, a schedule, a map, a score, a matched pair, a cost number, a before/after. A form that writes one row and flips a status is not an idea.
-- Coordinate at least two kinds of records (people and slots, entries and votes, items and claims, history and a deadline) and compute a result nobody could read off one row. One person logging their own numbers is a diary, not a project.
-- Vary the hard part: matching, scheduling under constraints, deduplication, forecasting from history, or ranking. Do not default to offline sync or IndexedDB unless the idea truly needs it.
-- why: name the single hardest part they will build and the interview question it prepares them to answer. Never "showcases full-stack skills".
-- roadmap: exactly 3 items, each starting "Day 1:", "Day 2:", "Day 3:" — Day 1 the core loop on seed data, Day 2 the hard part, Day 3 deploy plus a 60-second demo. No tests, Docker, auth or polish filler.
+- Decide the exact user and the moment they open it ("a hostel secretary pasting next week's menu"), but keep that framing out of the pitch.
+- pitch: at most 2 sentences describing the product itself — what the user pastes in and what comes back. Never open with "A final-year student..." and never describe a persona wanting something. Never "an AI platform for X" or "a dashboard for Y".
+- The core loop must produce something worth looking at: a ranked list, a structured plan, a rewrite, a score with reasons. A form that forwards one string to a chatbot is not an idea.
+- The prompt must do real work: the model has to transform, rank, extract or explain, and the app must validate the response before rendering it.
+- Vary the prompt-engineering hard part: strict JSON output, tone control, extraction from messy text, ranking with criteria, or explaining a decision.
+- why: name the single hardest part they will build and the interview question it prepares them to answer. Never "showcases AI skills".
+- roadmap: exactly 4 items, starting "00–15:", "15–35:", "35–50:", "50–60:" — in order: API key and first raw completion, the system prompt plus validated JSON, the screen plus a deploy, then the LinkedIn line and interview answer. No tests, Docker, auth or polish filler.
 
-BANNED, because every interviewer has seen them or they are too thin: to-do lists, chat apps, quiz apps, weather apps, URL shorteners, QR generators, link-in-bio pages, countdown timers, resume builders, generic CRUD/admin dashboards, simple approval-status trackers, personal expense/habit/calorie/mood trackers, diabetes/loan/house-price/crop-yield predictors, sentiment-analysis demos, "AI chatbot for college FAQ".
+BANNED, because every interviewer has seen them or they are too thin: chatbot wrappers, generic "AI assistant" panels, to-do lists, quiz apps, weather apps, URL shorteners, QR generators, link-in-bio pages, countdown timers, resume builders, generic CRUD/admin dashboards, personal expense/habit/calorie/mood trackers, diabetes/loan/house-price/crop-yield predictors, sentiment-analysis demos, and "AI chatbot for college FAQ".
 
-The branch matters only when it genuinely changes the problem; otherwise build around the interest. The idea must differ from every title in the avoid list. Do not default to campus queues, QR codes or booking forms; a QR scan or ticket is at most one small detail inside the loop, never the idea itself.`;
+The branch matters only when it genuinely changes the problem; otherwise build around the interest. The idea must differ from every title in the avoid list, and must be finishable by one beginner across the session's two build blocks (15–35 code, 35–50 UI and deploy).`;
 
   let avoid: string[] = [];
   try {
@@ -365,7 +365,8 @@ The branch matters only when it genuinely changes the problem; otherwise build a
     `Interest: ${interest}`,
     "Location: India, mid-range Android phone, patchy data",
     "Budget: free tiers only, no credit card",
-    "Time: 3 evenings, roughly 3 hours each",
+    "Time: 60 minutes total, guided live: 00–15 foundation and API key, 15–35 code build, 35–50 UI and deploy, 50–60 placement prep",
+    "The whole hour is hands-on: they type along from the first API call to the live deployed link",
     `Angle for this idea: ${angle}`,
     avoid.length > 0 ? `Do not repeat these: ${avoid.join("; ")}` : "",
   ]
@@ -417,9 +418,9 @@ export async function writeShareMessages(input: {
   ideaTitle: string;
 }): Promise<{ data: ShareMessages; source: AiSource; model: string | null }> {
   const fallback = fallbackShare(input);
-  const system = `You write WhatsApp share messages for a final-year Indian student who just registered for ShipWeek, a free 3-day project sprint.
+  const system = `You write WhatsApp share messages for a student who just registered for ShipWeek, a free 60-minute AI build session.
 
-Event facts you may use: free 3-day individual build sprint for final-year students, 500 seats, a certificate carrying the project name, and a personal referral link.
+Event facts you may use: free 60-minute session for beginners, no prior AI experience needed, 500 seats, a deployed project with a live link, a certificate naming the project, and a personal referral link.
 Rules:
 - First person, like a real student texting friends. No corporate voice.
 - Do not mention rewards, ₹200, prizes, incentives, mentors, teams, hackathons, networking, job guarantees, extra credits or goodies. The app explains rewards separately.
@@ -430,7 +431,7 @@ Rules:
 Return ONLY valid JSON:
 {"casual":"...","placement":"...","curiosity":"..."}`;
 
-  const user = `Name: ${input.name}\nCollege: ${input.college}\nBranch: ${input.branch}\nTheir project idea: ${input.ideaTitle || "a workshop project"}\nEvent: 3 days, free, 500 seats, certificate with the project name`;
+  const user = `Name: ${input.name}\nCollege: ${input.college}\nBranch: ${input.branch}\nTheir project idea: ${input.ideaTitle || "a first AI project"}\nEvent: 60 minutes, free, no prior AI experience, 500 seats, deployed project and certificate`;
 
   return withAi({
     component: "share-writer",
@@ -468,9 +469,9 @@ export async function writeCaptainKit(
   branchMix: string,
 ): Promise<{ data: CaptainKit; source: AiSource; model: string | null }> {
   const fallback = fallbackKit(college, branchMix);
-  const system = `You write launch kits for campus captains promoting ShipWeek, a free 3-day build sprint for final-year students. 500 seats total, certificate with the project name, referral rewards for the top five.
+  const system = `You write launch kits for campus captains promoting ShipWeek, a free 60-minute AI build session for beginners. 500 seats total, certificate with the project name, referral rewards for the top five.
 
-Facts you may use: ShipWeek is a free 3-day individual build sprint, Nov 6–8, with 500 seats, no live lectures, and a certificate carrying the project name. There are no mentors, teams, peer reviews, networking sessions, job guarantees, rewards, ₹200, prizes, extra credits or goodies.
+Facts you may use: ShipWeek is a free 60-minute AI build session on 7 Nov, with 500 seats, no prior AI experience required, a deployed project with a live link by the end of the hour, and a certificate naming the project. There are no mentors, teams, peer reviews, networking sessions, job guarantees, rewards, ₹200, prizes, extra credits or goodies.
 Rules:
 - Sound like a student organiser, not a brand.
 - Never mention a fact outside the list above. Do not mention rewards, ₹200, prizes or incentives; the app explains those separately. No fake scarcity, no "only 50 seats", no placement guarantees.
@@ -479,7 +480,7 @@ Rules:
 Return ONLY valid JSON:
 {"poster_caption":"...","whatsapp_pitch":"...","replies":[{"doubt":"...","reply":"..."}]}`;
 
-  const user = `College: ${college}\nBranch mix: ${branchMix}\nAudience: final-year students, placement-focused, WhatsApp-native`;
+  const user = `College: ${college}\nBranch mix: ${branchMix}\nAudience: students with no AI experience, placement-focused, WhatsApp-native`;
 
   return withAi({
     component: "captain-kit",
@@ -518,9 +519,9 @@ export async function recommendNextMove(
   metrics: CopilotMetrics,
 ): Promise<{ data: CopilotMove; source: AiSource; model: string | null }> {
   const fallback = fallbackCopilot(metrics);
-  const system = `You are the growth copilot for a 7-day campaign to get 500 registrations for a free 3-day student workshop in India.
+  const system = `You are the growth copilot for a 7-day campaign to get 500 registrations for a free 60-minute beginner AI workshop in India.
 
-Campaign facts: free, 3 days, 500 seats, individual projects and a certificate with the project name. There are no teams, mentors, extra seats, placement guarantees, rewards, ₹200, prizes or other incentives.
+Campaign facts: free, 60 minutes, no prior AI experience needed, 500 seats, one deployed first AI project and a certificate naming it. There are no teams, mentors, extra seats, placement guarantees, rewards, ₹200, prizes or other incentives.
 
 Given the funnel numbers, recommend exactly ONE concrete action for the next 6 hours.
 Rules:
@@ -587,31 +588,33 @@ export async function evaluateProject(input: {
   title: string;
   url: string;
   description: string;
+  linkCheck?: string;
 }): Promise<{ data: Evaluation; source: AiSource; model: string | null }> {
   const fallback = fallbackEvaluation(input);
-  const system = `You evaluate final-year student projects from a 3-day build sprint. You receive text only: a title, a URL string and a description.
+  const system = `You evaluate beginner projects from a 60-minute AI build session. You receive text only: a title, a URL string and a description.
 
 What you cannot see:
-- You cannot open the URL, run the app, read the repo, or count users. A URL in the submission proves only that a link was typed.
-- Never say the project is deployed, live, accessible, working, or used by anyone. Never call a link a strength by itself.
+- You cannot run the app, read the repo, or count users. A URL in the submission proves only that a link was typed.
+- You are given one machine check of the link. If it says the link failed or timed out, say so plainly and cap the score at 35: a project nobody can open is not demoable.
+- If the link check succeeded, that only means a page answered HTTP 200. Never claim the core loop works, that users exist, or that it is deployed well.
 
-How to score (0-100, anchored — pick the band before picking a number):
+How to score (0-100, anchored — pick the band before picking a number). A first AI project is expected to be small; do not penalise small scope, only missing function:
 - 0-15: not a reviewable project. Gibberish, placeholder text, keyboard mash, a link back to the submission form, or no described functionality.
-- 16-35: an idea or a landing page, with no working feature described.
-- 36-55: part of a core loop described, or a very early prototype.
-- 56-75: one complete loop described end to end, with a specific user and specific features.
-- 76-88: a complete loop plus concrete evidence in the description: real users tested it, measured results, a demo link described in words.
-- 89-100: exceptional traction with specific numbers a reviewer can verify from the text.
+- 16-35: an idea, a landing page, or a generic chatbot with no described input, prompt or result.
+- 36-55: the model is called, but the loop is incomplete or the output is not usable/rendered.
+- 56-75: one complete AI loop described end to end: an input, a prompt that does real work, a validated result and a screen that shows it.
+- 76-88: a complete loop plus concrete evidence: prompt iteration, edge cases handled, real people who tried it, a measured result.
+- 89-100: exceptional for one hour, with specific verifiable numbers or multiple tested use cases.
 
 Hard rules:
-- If the description is shorter than three sentences or never names a user and a feature, score at most 15.
+- If the description is shorter than three sentences or never names an input and a feature, score at most 15.
 - Strengths must quote what the description actually says. For a 0-15 score, state plainly what is missing instead of inventing strengths.
-- next_step is one concrete fix, achievable this week.
-- The certificate_text must not claim deployment, users or results.
+- next_step is one concrete fix they could make in thirty minutes.
+- The certificate_text must not claim deployment, users or results; it names the project and what it does, framed as a first AI project built in the session.
 Return ONLY valid JSON:
 {"score":0,"strengths":["...","..."],"next_step":"...","certificate_text":"one sentence naming the project and what it does"}`;
 
-  const user = `Student: ${input.name} (${input.college})\nProject title: ${input.title}\nProject URL: ${input.url}\nDescription: ${input.description || "(no description provided)"}`;
+  const user = `Student: ${input.name} (${input.college})\nProject title: ${input.title}\nProject URL: ${input.url}\nLink check: ${input.linkCheck ?? "not checked"}\nDescription: ${input.description || "(no description provided)"}`;
 
   return withAi({
     component: "project-evaluator",

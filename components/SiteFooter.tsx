@@ -4,8 +4,11 @@ import { getPublicStats } from "@/lib/data";
 
 export async function SiteFooter() {
   let demo = 0;
+  let mode: "live" | "simulation" = "live";
   try {
-    demo = (await getPublicStats()).demo;
+    const stats = await getPublicStats();
+    demo = stats.demo;
+    mode = stats.mode;
   } catch {
     demo = 0;
   }
@@ -17,16 +20,17 @@ export async function SiteFooter() {
           <div className="max-w-[340px]">
             <p className="display text-[38px] leading-none">ShipWeek&nbsp;'26</p>
             <p className="mt-3 text-[13px] leading-relaxed text-paper/65">
-              A free 3-day build sprint for final-year students. {workshop.dates}. One
-              deployed project, an AI review, and a certificate with its name on it.
+              A free 60-minute AI build for students with no prior AI experience.{" "}
+              {workshop.dates}. One deployed project, an AI review, and a certificate that
+              names what you built.
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-10 text-[13px] sm:grid-cols-3">
             <div>
-              <p className="eyebrow mb-3 text-paper/40">The sprint</p>
+              <p className="eyebrow mb-3 text-paper/40">The hour</p>
               <ul className="space-y-2 text-paper/80">
-                <li><Link href="/#sprint" className="hover:text-lime">How it works</Link></li>
+                <li><Link href="/#sprint" className="hover:text-lime">The 60-minute breakdown</Link></li>
                 <li><Link href="/#ideas" className="hover:text-lime">Project scope</Link></li>
                 <li><Link href="/#faq" className="hover:text-lime">FAQ</Link></li>
               </ul>
@@ -42,6 +46,7 @@ export async function SiteFooter() {
             <div>
               <p className="eyebrow mb-3 text-paper/40">Workshop day</p>
               <ul className="space-y-2 text-paper/80">
+                <li><Link href="/status" className="hover:text-lime">Find my seat</Link></li>
                 <li><Link href="/#faq" className="hover:text-lime">Submission</Link></li>
                 <li><Link href="/#faq" className="hover:text-lime">Certificate</Link></li>
                 <li><Link href="/#faq" className="hover:text-lime">Contact</Link></li>
@@ -53,7 +58,13 @@ export async function SiteFooter() {
         <div className="mt-12 border-t border-paper/15 pt-6">
           <p className="text-[11px] leading-relaxed text-paper/45">
             <strong className="text-paper/70">Data disclosure.</strong>{" "}
-            {demo > 0 ? (
+            {mode === "simulation" ? (
+              <>
+                Simulation mode is on. Every number on this site comes from a generated sample
+                campaign; real signups are stored separately and are not shown while the
+                simulation is running.
+              </>
+            ) : demo > 0 ? (
               <>
                 This environment includes {demo} seeded demo registrations and sample project
                 submissions. Every seeded row is tagged DEMO, and none of them count toward

@@ -25,19 +25,24 @@ export async function getEnv(): Promise<CloudflareEnv> {
   };
 }
 
+/**
+ * Removes the original sample campaign only. Deliberately leaves simulation
+ * rows alone: a simulation is an explicit admin action with a visible mode, so
+ * a worker restart must not silently delete it.
+ */
 export async function purgeDemoRows(db: D1Database): Promise<number> {
   const existing = await db
-    .prepare("SELECT COUNT(*) AS n FROM registrants WHERE is_demo = 1")
+    .prepare("SELECT COUNT(*) AS n FROM registrants WHERE is_demo = 1 AND demo_kind = 'demo'")
     .first<{ n: number }>();
   if ((existing?.n ?? 0) === 0) return 0;
 
   const results = await db.batch([
-    db.prepare("DELETE FROM submissions WHERE is_demo = 1"),
+    db.prepare("DELETE FROM submissions WHERE is_demo = 1 AND demo_kind = 'demo'"),
     db.prepare(
-      "DELETE FROM captains WHERE registrant_id IN (SELECT id FROM registrants WHERE is_demo = 1)",
+      "DELETE FROM captains WHERE registrant_id IN (SELECT id FROM registrants WHERE is_demo = 1 AND demo_kind = 'demo')",
     ),
-    db.prepare("DELETE FROM events WHERE is_demo = 1"),
-    db.prepare("DELETE FROM registrants WHERE is_demo = 1"),
+    db.prepare("DELETE FROM events WHERE is_demo = 1 AND demo_kind = 'demo'"),
+    db.prepare("DELETE FROM registrants WHERE is_demo = 1 AND demo_kind = 'demo'"),
     db.prepare("DELETE FROM demo_funnel"),
     db.prepare("DELETE FROM colleges WHERE id NOT IN (SELECT DISTINCT college_id FROM registrants)"),
   ]);
@@ -95,6 +100,29 @@ async function init(): Promise<D1Database> {
   }
   if (!hasSubmissionColumn("reviewed_at")) {
     await env.DB.exec("ALTER TABLE submissions ADD COLUMN reviewed_at TEXT");
+  }
+  if (!hasSubmissionColumn("url_status")) {
+    await env.DB.exec("ALTER TABLE submissions ADD COLUMN url_status TEXT");
+  }
+  if (!hasSubmissionColumn("url_checked_at")) {
+    await env.DB.exec("ALTER TABLE submissions ADD COLUMN url_checked_at TEXT");
+  }
+
+  // Simulation rows share is_demo = 1 with the sample campaign so they can
+  // never be counted as real, and demo_kind keeps the two sets separable.
+  if (!hasSubmissionColumn("demo_kind")) {
+    await env.DB.exec("ALTER TABLE submissions ADD COLUMN demo_kind TEXT NOT NULL DEFAULT 'demo'");
+  }
+  if (!(registrantColumns.results ?? []).some((column) => column.name === "demo_kind")) {
+    await env.DB.exec("ALTER TABLE registrants ADD COLUMN demo_kind TEXT NOT NULL DEFAULT 'demo'");
+  }
+  const eventColumns = await env.DB.prepare("PRAGMA table_info(events)").all<{ name: string }>();
+  if (!(eventColumns.results ?? []).some((column) => column.name === "demo_kind")) {
+    await env.DB.exec("ALTER TABLE events ADD COLUMN demo_kind TEXT NOT NULL DEFAULT 'demo'");
+  }
+  // Aggregated event rows (simulation only) carry a count; real events are 1.
+  if (!(eventColumns.results ?? []).some((column) => column.name === "qty")) {
+    await env.DB.exec("ALTER TABLE events ADD COLUMN qty INTEGER NOT NULL DEFAULT 1");
   }
 
   await env.DB.batch(VIEW_STATEMENTS.map((sql) => env.DB.prepare(sql)));

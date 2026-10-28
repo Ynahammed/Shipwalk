@@ -8,6 +8,8 @@ import { maskEmail, percent, timeAgo } from "@/lib/utils";
 import { AdminAction } from "./AdminAction";
 import { AdminSubmissionReview } from "./AdminSubmissionReview";
 import { AdminPurgeDemo } from "./AdminPurgeDemo";
+import { AdminSecurity } from "./AdminSecurity";
+import { AdminSimulation } from "./AdminSimulation";
 import { CopilotCard } from "./CopilotCard";
 import { FunnelBars } from "./FunnelBars";
 import { LogoutButton } from "./LogoutButton";
@@ -17,7 +19,7 @@ const NAV = [
   { href: "#overview", label: "Overview" },
   { href: "#pace", label: "Pace & funnel" },
   { href: "#growth", label: "Sources & colleges" },
-  { href: "#workshop", label: "Workshop day" },
+  { href: "#workshop", label: "Session" },
   { href: "#ai", label: "AI logs" },
 ];
 
@@ -81,16 +83,30 @@ export function AdminDashboard({ overview }: { overview: AdminOverview }) {
         </div>
       </header>
 
-      <div className="border-b border-[#e7b2a3] bg-[#fdece6]">
-        <div className="shell flex flex-wrap items-center justify-between gap-2 py-2.5">
-          <p className="text-[10.5px] leading-relaxed text-[#96310f]">
-            <strong>Preview dataset.</strong> {totals.demo} seeded demo registrations and{" "}
-            {totals.demoSubmissions} sample submissions are excluded from live totals. The funnel below
-            uses live events only; {funnel.demoVisits.toLocaleString("en-IN")} seeded visits are examples, not results.
-          </p>
-          <AdminPurgeDemo demoCount={totals.demo} />
+      <AdminSimulation
+        mode={overview.mode}
+        students={overview.simulation.students}
+        submissions={overview.simulation.submissions}
+        certificates={overview.simulation.certificates}
+      />
+
+      {overview.mode === "live" && totals.demo > 0 && (
+        <div className="border-b border-[#e7b2a3] bg-[#fdece6]">
+          <div className="shell flex flex-wrap items-center justify-between gap-2 py-2.5">
+            <p className="text-[10.5px] leading-relaxed text-[#96310f]">
+              <strong>Preview dataset.</strong> {totals.demo} seeded demo registrations and{" "}
+              {totals.demoSubmissions} sample submissions are excluded from live totals. The funnel below
+              uses live events only; {funnel.demoVisits.toLocaleString("en-IN")} seeded visits are examples, not results.
+            </p>
+            <AdminPurgeDemo demoCount={totals.demo} />
+          </div>
         </div>
-      </div>
+      )}
+
+      <AdminSecurity
+        weakPasscode={overview.security.weakPasscode}
+        recentFailures={overview.security.recentFailures}
+      />
 
       <nav className="no-scrollbar overflow-x-auto border-b border-line bg-paper-2">
         <div className="shell flex gap-6 py-2.5">
@@ -122,7 +138,7 @@ export function AdminDashboard({ overview }: { overview: AdminOverview }) {
                     timeZone: "Asia/Kolkata",
                   })
                 }{" "}
-                · {totals.live} live signups +{" "}
+                · {totals.live} {overview.mode === "simulation" ? "simulated" : "live"} signups +{" "}
                 {totals.demo} demo · campaign plan 500 by day 7
               </p>
             </div>
@@ -132,7 +148,7 @@ export function AdminDashboard({ overview }: { overview: AdminOverview }) {
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#2c8a57] opacity-60" />
                   <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#2c8a57]" />
                 </span>
-                Live data
+                {overview.mode === "simulation" ? "Simulation data" : "Live data"}
               </span>
               <Link href="/kit" className="tag transition-colors hover:border-ink">
                 Captain kit <ArrowUpRight className="h-3 w-3" />
@@ -247,7 +263,7 @@ export function AdminDashboard({ overview }: { overview: AdminOverview }) {
               <span className="tag">Live only · demo excluded</span>
             </div>
             <div className="mt-4">
-              <FunnelBars funnel={funnel} />
+              <FunnelBars funnel={funnel} simulated={overview.mode === "simulation"} />
             </div>
           </div>
         </section>
@@ -401,6 +417,13 @@ export function AdminDashboard({ overview }: { overview: AdminOverview }) {
                     </p>
                   </div>
                   <AdminAction id={person.id} action="verify" label="Confirm signup" />
+                  <AdminAction
+                    id={person.id}
+                    action="delete-registrant"
+                    label="Delete"
+                    confirmText={`Permanently delete ${person.name} and their submission, events and referral credit? This cannot be undone.`}
+                    className="text-[10px] font-semibold text-[#96310f] hover:underline disabled:opacity-50"
+                  />
                 </div>
               ))}
               {overview.unverifiedList.length === 0 && (
@@ -466,7 +489,7 @@ export function AdminDashboard({ overview }: { overview: AdminOverview }) {
         <section id="workshop" className="card-flat scroll-mt-24 overflow-hidden">
           <div className="flex flex-wrap items-end justify-between gap-2 border-b border-line p-5">
             <div>
-              <p className="eyebrow text-ink-faint">Workshop day</p>
+              <p className="eyebrow text-ink-faint">Session</p>
               <h2 className="display mt-1 text-[30px] leading-none">Submissions and check-in</h2>
             </div>
             <div className="flex gap-4 text-[10px] text-ink-soft">
@@ -495,8 +518,11 @@ export function AdminDashboard({ overview }: { overview: AdminOverview }) {
               <tbody>
                 {overview.submissions.map((submission) => {
                   const evaluation = parseEvaluation(submission.feedback_json);
+                  // In simulation mode the listed rows are the demo rows, and the
+                  // review flow has to stay usable so the whole loop can be shown.
+                  const actionable = overview.mode === "simulation" || submission.is_demo === 0;
                   const flags =
-                    submission.is_demo === 0
+                    actionable
                       ? submissionFlags({
                           title: submission.project_title,
                           description: submission.description ?? "",
@@ -536,6 +562,17 @@ export function AdminDashboard({ overview }: { overview: AdminOverview }) {
                           </span>
                         </p>
                       )}
+                      {submission.url_status && (
+                        <p
+                          className={`mt-1 text-[9px] ${
+                            submission.url_status.startsWith("ok")
+                              ? "text-[#215c37]"
+                              : "text-[#96310f]"
+                          }`}
+                        >
+                          Link check: {submission.url_status}
+                        </p>
+                      )}
                     </td>
                     <td>
                       <p className="text-[11px]">{submission.name}</p>
@@ -571,7 +608,7 @@ export function AdminDashboard({ overview }: { overview: AdminOverview }) {
                       </div>
                     </td>
                     <td className="text-right">
-                      {submission.is_demo === 0 && submission.review_status !== "approved" ? (
+                      {actionable && submission.review_status !== "approved" ? (
                         <AdminSubmissionReview
                           id={submission.registrant_id}
                           baseline={submission.score ?? null}
@@ -586,7 +623,7 @@ export function AdminDashboard({ overview }: { overview: AdminOverview }) {
                           </Link>
                         )
                       )}
-                      {submission.is_demo === 0 && (
+                      {actionable && (
                         <div className="mt-1">
                           <AdminAction
                             id={submission.registrant_id}
@@ -594,6 +631,13 @@ export function AdminDashboard({ overview }: { overview: AdminOverview }) {
                             label="Reset"
                             confirmText={`Delete the review and certificate for "${submission.project_title}"? The student keeps their seat and can submit again.`}
                             className="text-[10px] font-semibold text-[#96310f] hover:underline disabled:opacity-50"
+                          />
+                          <AdminAction
+                            id={submission.registrant_id}
+                            action="delete-registrant"
+                            label="Delete student"
+                            confirmText={`Permanently delete ${submission.name} (${submission.ref_code}) and all their data? This cannot be undone.`}
+                            className="ml-2 text-[10px] font-semibold text-[#96310f] hover:underline disabled:opacity-50"
                           />
                         </div>
                       )}
@@ -610,7 +654,7 @@ export function AdminDashboard({ overview }: { overview: AdminOverview }) {
                             {flags.length > 0 && (
                               <div className="mb-3 rounded border border-[#e2b06a] bg-[#fdf1dc] px-3 py-2">
                                 <p className="eyebrow text-[#8a5109]">
-                                  Not obviously a 3-day solo build
+                                  Not obviously a 60-minute build
                                 </p>
                                 <ul className="mt-1 space-y-1">
                                   {flags.map((flag) => (
@@ -681,6 +725,50 @@ export function AdminDashboard({ overview }: { overview: AdminOverview }) {
           <p className="border-t border-line px-5 py-2.5 text-[9px] text-ink-faint">
             Only live submissions are listed here. Seeded sample submissions are excluded from live results and totals; their individual pages are tagged DEMO.
           </p>
+        </section>
+
+        <section id="ops" className="card-flat scroll-mt-24 overflow-hidden">
+          <div className="flex flex-wrap items-end justify-between gap-2 border-b border-line p-5">
+            <div>
+              <p className="eyebrow text-ink-faint">Operations</p>
+              <h2 className="display mt-1 text-[28px] leading-none">Recent server errors</h2>
+            </div>
+            <p className="text-[10px] text-ink-soft">
+              Captured by the instrumentation hook. Export the data before the event.
+            </p>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Message</th>
+                  <th>Route</th>
+                  <th className="text-right">When</th>
+                </tr>
+              </thead>
+              <tbody>
+                {overview.errors.map((entry) => (
+                  <tr key={entry.id}>
+                    <td className="max-w-[420px] truncate text-[11px]" title={entry.message}>
+                      {entry.message}
+                    </td>
+                    <td className="mono text-[10px] text-ink-soft">{entry.path ?? "—"}</td>
+                    <td className="text-right text-[10px] text-ink-faint">
+                      {timeAgo(entry.created_at)}
+                    </td>
+                  </tr>
+                ))}
+                {overview.errors.length === 0 && (
+                  <tr>
+                    <td colSpan={3} className="!py-6 text-center text-[11px] text-ink-soft">
+                      No server errors logged.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </section>
 
         <section id="ai" className="card-flat scroll-mt-24 overflow-hidden">

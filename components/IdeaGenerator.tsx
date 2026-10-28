@@ -154,7 +154,7 @@ export function IdeaGenerator() {
       {idea && !loading && (
         <div key={idea.title} className="rise border-t border-ink bg-[#fffdf7] p-5 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="eyebrow text-accent">Your 3-day build</p>
+            <p className="eyebrow text-accent">Your 60-minute build</p>
             <span
               className="tag"
               title={

@@ -18,6 +18,7 @@ export type Registrant = {
   idea_json: string | null;
   checked_in: number;
   is_demo: number;
+  demo_kind?: string | null;
   created_at: string;
 };
 
@@ -87,7 +88,10 @@ export type SubmissionRow = {
   final_score: number | null;
   review_status: "pending" | "approved";
   reviewed_at: string | null;
+  url_status: string | null;
+  url_checked_at: string | null;
   is_demo: number;
+  demo_kind?: string | null;
   created_at: string;
   name?: string;
   ref_code?: string;
@@ -103,6 +107,8 @@ export type PacePoint = {
   target: number;
 };
 
+export type DataModeName = "live" | "simulation";
+
 export type PublicStats = {
   total: number;
   verified: number;
@@ -110,9 +116,16 @@ export type PublicStats = {
   demo: number;
   seats: number;
   colleges: number;
+  mode: DataModeName;
 };
 
 export type AdminOverview = {
+  mode: DataModeName;
+  simulation: {
+    students: number;
+    submissions: number;
+    certificates: number;
+  };
   totals: {
     total: number;
     verified: number;
@@ -169,4 +182,15 @@ export type AdminOverview = {
     created_at: string;
   }[];
   demoFunnel: number;
+  errors: {
+    id: number;
+    message: string;
+    path: string | null;
+    digest: string | null;
+    created_at: string;
+  }[];
+  security: {
+    weakPasscode: boolean;
+    recentFailures: number;
+  };
 };

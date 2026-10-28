@@ -7,9 +7,10 @@ import { EvaluationCard } from "./EvaluationCard";
 import { ArrowUpRight, SparkIcon } from "./icons";
 
 const SAMPLE = {
-  title: "CampusBus — live shuttle tracking",    url: "https://campusbus.example.workers.dev",
+  title: "MessMenu AI — hostel mess planner",
+  url: "https://messmenu-ai.example.workers.dev",
   description:
-    "A live college shuttle tracker with route ETAs, a driver view, and a WhatsApp alert when the bus leaves the main gate. Built with Next.js and Cloudflare D1. Tested with 40 students for a week; the average wait dropped by six minutes in the pilot.",
+    "A one-screen app where a hostel secretary pastes the week's mess menu and gets back a shopping list grouped by vendor, plus a note on which items repeat. It calls a hosted LLM from a server route with a system prompt, validates the JSON response and renders three cards. Built in the 60-minute session with Next.js on Cloudflare Workers; the prompt and the API route are the core logic.",
 };
 
 export function SubmitForm({ code }: { code: string }) {

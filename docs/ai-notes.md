@@ -2,6 +2,25 @@
 
 These are the build-time notes for the five AI components in ShipWeek. They follow the submission format: **what I asked → what AI suggested → what I changed**.
 
+## Reframe: the 60-minute AI build
+
+The event changed from a 3-day sprint to a **60-minute beginner AI build**, and the AI layer changed with it. The session is four timed blocks (`lib/config.ts` → `agenda`): 00–15 Foundation & AI APIs, 15–35 Hands-on Code Build, 35–50 UI & Deployment, 50–60 Placement Strategy. The certificate prints those four modules, so the model output has to be sized for one hour, not three evenings.
+
+What changed in the prompts:
+
+| Component | Before | Now |
+| --- | --- | --- |
+| Project scout | One project per 3 evenings, up to 3 screens, D1 when needed | One screen, one hosted model call, no database; input box → prompt → validated result → deploy |
+| Project evaluator | Rubric anchored on a 3-day build | Rubric anchored on a first AI project: partial loop 36–55, complete AI loop 56–75, loop plus evidence 76–88 |
+| Share writer / captain kit | “3 days, final-year students” | “60 minutes, no prior AI experience”, with the agenda as the pitch |
+| Growth copilot | 7-day campaign for a 3-day workshop | 7-day campaign for a 60-minute beginner AI workshop |
+
+The idea prompt's roadmap requirement is now the session itself: `00–15:` key and first raw completion, `15–35:` system prompt with validated JSON, `35–50:` screen and deploy, `50–60:` the LinkedIn line and interview answer. The fallback catalogue (`lib/fallbacks.ts`) was rewritten to twelve first-AI-projects with the same four steps, so an offline visitor still sees something that fits the hour. Certificate text now reads as a first AI project shipped in the session, and never claims deployment, users or results.
+
+The sections below are the earlier 3-day build log, kept because they document how the prompts were tightened (schema enforcement, forbidden facts, the fallback path). The current prompt text is in `lib/ai.ts`.
+
+---
+
 **Read this first:** the build initially ran without a `GROQ_API_KEY`, so every app-level call resolved to its curated fallback and was written to `prompt_logs` with `source = "fallback"`. The quoted outputs below are those fallback rows — they show what the product served with no key, not a model completion. A free Groq key was later added; all five components were then verified with `source = "llm"` and `model = "openai/gpt-oss-20b"`. The prompt text below is the system prompt in `lib/ai.ts`.
 
 ## Live Groq verification

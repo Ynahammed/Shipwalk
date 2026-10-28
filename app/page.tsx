@@ -9,7 +9,7 @@ import { ScoreDial } from "@/components/ScoreDial";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteNav } from "@/components/SiteNav";
 import { ArrowRight, ArrowUpRight, BoltIcon, ChatIcon, SparkIcon } from "@/components/icons";
-import { workshop } from "@/lib/config";
+import { agenda, workshop } from "@/lib/config";
 import { getCollegeRank, getLeaderboard, getPublicStats } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
@@ -17,23 +17,23 @@ export const dynamic = "force-dynamic";
 const faqs = [
   {
     q: "Is it actually free?",
-    a: "Yes. The 3-day sprint, the AI baseline review, the organiser's score and the certificate are free. The only money in the system is a fixed ₹1,000 referral pool for the top five verified referrers. There is no card, no upsell and no paid tier hiding behind the form.",
+    a: "Yes. The 60-minute session, the AI baseline review, the organiser's score and the certificate are free. The only money in the system is a fixed ₹1,000 referral pool for the top five verified referrers. There is no card, no upsell and no paid tier hiding behind the form.",
   },
   {
-    q: "I'm not from CSE. Can I build anything?",
-    a: "Fine. The projects are software-first, but the problems come from your branch: mess waste, bus timings, clinic queues, attendance, lab scheduling. The idea generator does not filter by coding level, and the 3-day scope is deliberately small enough for one person.",
+    q: "Do I need any AI experience?",
+    a: "No. The first fifteen minutes cover what an LLM is, what an API key does and how to set one up without a local environment. You do not need a CSE degree, a GPU, a paid API plan, or any model-training background — the session ships one small app that calls a hosted model.",
   },
   {
     q: "I don't have an idea.",
-    a: "That is the point of the idea generator. Answer two questions and it gives you one buildable project with a 3-day roadmap. You can change the idea later; the generated idea is a starting point, not a contract.",
+    a: "That is what the idea generator is for. Answer two questions and it returns one beginner-sized AI project with a four-step, 60-minute build plan. You can change the idea later; the generated project is a starting point, not a contract.",
   },
   {
     q: "How do the referral rewards work?",
     a: "Every registrant gets a personal link. Only signups confirmed through the emailed link count toward the people and college leaderboards and the ₹200 rewards; browser self-confirmation keeps your seat but does not prove email ownership. One email and one phone number is one entry, and duplicate or clustered signups are flagged before any reward is paid.",
   },
   {
-    q: "Do I need to attend all three days?",
-    a: "There are no live lectures to miss. You build at your own pace across the three days. You do need to submit a working project by the end of day 3 to get your review and certificate.",
+    q: "What happens in the 60 minutes?",
+    a: "It runs as one live session, minute by minute: 0–15 foundation and AI APIs, 15–35 hands-on code build, 35–50 UI and deployment, 50–60 placement strategy. You leave with a deployed link and a certificate that lists those four modules.",
   },
   {
     q: "What does the AI review actually do?",
@@ -91,18 +91,18 @@ export default async function Home({
               <div className="flex flex-wrap items-center gap-2">
                 <span className="tag tag-accent">Free</span>
                 <span className="tag">{workshop.dates}</span>
-                <span className="tag">3-day build sprint</span>
+                <span className="tag">60-minute AI build</span>
               </div>
 
-              <h1 className="display mt-6 max-w-[820px] text-[clamp(54px,8.3vw,100px)]">
-                Leave with a <em className="italic text-accent">deployed</em> project, not
-                another tutorial.
+              <h1 className="display mt-6 max-w-[820px] text-[clamp(50px,7.6vw,92px)]">
+                Build your <em className="italic text-accent">first AI project</em> in 60
+                minutes.
               </h1>
 
               <p className="mt-6 max-w-[560px] text-[16px] leading-relaxed text-ink-soft sm:text-[17px]">
-                ShipWeek is a free 3-day sprint for final-year students. Pick a problem,
-                build one working thing, and walk out with a live link, an AI baseline review, an
-                organiser score, and a certificate that carries your project's name.
+                No prior AI experience required. In one guided hour you call a real LLM API,
+                build a working app around it, deploy it to a live URL and leave with something
+                you can show a recruiter — plus a certificate that names what you built.
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -211,11 +211,12 @@ export default async function Home({
               >
                 {[
                   "Build something real",
-                  "3 days",
+                  "60 minutes",
+                  "No prior AI experience",
                   "500 seats",
                   "Free",
+                  "Live URL for your resume",
                   "Certificate with your project name",
-                  "College vs college",
                 ].map((item) => (
                   <span key={`${copy}-${item}`} className="flex items-center gap-8">
                     {item}
@@ -227,46 +228,30 @@ export default async function Home({
           </div>
         </div>
 
-        {/* Sprint */}
+        {/* The 60-minute breakdown */}
         <section id="sprint" className="scroll-mt-24 border-b border-line">
           <div className="shell grid gap-12 py-16 lg:grid-cols-[0.9fr_1.1fr] lg:py-24">
             <div>
-              <p className="eyebrow text-accent">The sprint</p>
+              <p className="eyebrow text-accent">The 60-minute breakdown</p>
               <h2 className="display mt-4 max-w-[460px] text-[clamp(40px,5vw,62px)]">
-                One problem. Three nights. A live link.
+                One hour. Every minute hands-on.
               </h2>
               <p className="mt-5 max-w-[440px] text-[14.5px] leading-relaxed text-ink-soft">
-                Nobody needs another certificate for watching a webinar. Final-year students
-                need something they can point at in an interview and explain: a small,
-                working product with a real user and a real URL.
+                Every minute is optimised for maximum hands-on learning. You type along for the
+                whole hour: set up an API key, write the prompt and the request, put a screen on
+                top of it, deploy, and then learn how to talk about it in an interview.
               </p>
               <div className="mt-8 border-l-2 border-accent pl-5">
                 <p className="display max-w-[430px] text-[26px] leading-[1.15]">
-                  "The project is the proof. The certificate is just the receipt."
+                  "You don't need to be an AI engineer to ship an AI project."
                 </p>
               </div>
             </div>
 
             <div className="space-y-3">
-              {[
-                {
-                  title: "Pick one problem",
-                  body: "A problem you have personally complained about this month. One user, one core loop, one thing that must work in the demo.",
-                  tag: "Day 1 · Scope",
-                },
-                {
-                  title: "Build the loop",
-                  body: "The shortest path a stranger can click end to end. No dashboards for imaginary admins. Ugly is fine; working is not optional.",
-                  tag: "Day 2 · Build",
-                },
-                {
-                  title: "Ship and defend it",
-                  body: "Deploy, record a 60-second demo, and submit. The AI gives you a baseline score; the organiser reads it and sets the final one.",
-                  tag: "Day 3 · Ship",
-                },
-              ].map((step, index) => (
+              {agenda.map((block, index) => (
                 <div
-                  key={step.title}
+                  key={block.title}
                   className="card-flat group grid grid-cols-[46px_1fr] gap-4 p-5 transition-colors hover:border-ink sm:p-6"
                 >
                   <span className="display text-[32px] leading-none text-ink-faint">
@@ -274,11 +259,11 @@ export default async function Home({
                   </span>
                   <div>
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <h3 className="text-[16px] font-semibold">{step.title}</h3>
-                      <span className="tag">{step.tag}</span>
+                      <h3 className="text-[16px] font-semibold">{block.title}</h3>
+                      <span className="tag">{block.window}</span>
                     </div>
                     <p className="mt-2 text-[12.5px] leading-relaxed text-ink-soft">
-                      {step.body}
+                      {block.body}
                     </p>
                   </div>
                 </div>
@@ -297,14 +282,15 @@ export default async function Home({
               </h2>
               <p className="mt-5 max-w-[420px] text-[14.5px] leading-relaxed text-ink-soft">
                 Most workshop landing pages ask for your email before they give you anything.
-                This one gives you the project first: answer two questions, get a buildable
-                idea with a 3-day roadmap, and only then decide whether the seat is worth it.
+                This one gives you the project first: answer two questions, get a beginner-sized
+                AI project with a 60-minute build plan, and only then decide whether the seat is
+                worth it.
               </p>
 
               <ul className="mt-8 space-y-4">
                 {[
-                  "Built for one person and free tiers, not a 6-person team.",
-                  "Specific enough to demo in 60 seconds.",
+                  "Built for one person, one screen and free tiers — no team, no GPU.",
+                  "Small enough to finish inside the hour, specific enough to demo in 30 seconds.",
                   "Yours to keep, even if you don't sign up.",
                 ].map((line) => (
                   <li key={line} className="flex gap-3 text-[13px] leading-relaxed">
@@ -331,12 +317,12 @@ export default async function Home({
               <div>
                 <p className="eyebrow text-accent">What you leave with</p>
                 <h2 className="display mt-3 max-w-[640px] text-[clamp(40px,5vw,62px)]">
-                  Three things that survive after the weekend.
+                  Three things you walk out with.
                 </h2>
               </div>
               <p className="max-w-[280px] text-[12.5px] leading-relaxed text-ink-soft">
-                Not a folder of screenshots. Three artefacts you can send to a recruiter on
-                Monday morning.
+                Not a folder of screenshots. Three artefacts you can send to a recruiter the
+                same evening.
               </p>
             </div>
 
@@ -391,11 +377,11 @@ export default async function Home({
                   <div className="absolute inset-2 rounded border border-line" />
                   <div className="relative px-3 py-4 text-center">
                     <p className="text-[7px] font-semibold uppercase tracking-[0.24em] text-ink-faint">
-                      Certificate of completion
+                      60-minute AI build
                     </p>
                     <p className="display mt-2 text-[25px] leading-none">Your Name</p>
                     <p className="mt-1.5 text-[8px] leading-relaxed text-ink-soft">
-                      for shipping <span className="font-semibold text-ink">Your Project</span>
+                      for building <span className="font-semibold text-ink">Your AI Project</span>
                     </p>
                     <div className="mt-3 flex items-center justify-center gap-1">
                       <span className="h-px w-6 bg-line" />
@@ -409,26 +395,27 @@ export default async function Home({
                   A certificate with your project
                 </h3>
                 <p className="mt-3 text-[12.5px] leading-relaxed text-ink-soft">
-                  Your name, the project's name, its live link and the score. Printable to
-                  PDF and verifiable by certificate ID.
+                  Your name, the project's name, its live link, the score, and the four modules
+                  you completed. Printable to PDF and verifiable by certificate ID.
                 </p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Three days */}
+        {/* The build shape */}
         <section className="border-b border-line bg-[#fffdf7]">
           <div className="shell py-16 lg:py-24">
             <div className="grid gap-10 lg:grid-cols-[0.7fr_1.3fr]">
               <div>
-                <p className="eyebrow text-accent">How the 3 days run</p>
+                <p className="eyebrow text-accent">What you actually build</p>
                 <h2 className="display mt-3 text-[clamp(38px,4.6vw,58px)]">
-                  Build at your pace. Ship on the same day.
+                  One screen. One API call. One deploy.
                 </h2>
                 <p className="mt-4 max-w-[360px] text-[13px] leading-relaxed text-ink-soft">
-                  No live lectures. Three evenings of focused work, one submission, one
-                  review. The deadline is the only thing on a schedule.
+                  Every project in the room follows the same shape, so nobody loses the hour
+                  to architecture. You pick the problem and the prompt; the four agenda blocks
+                  carry the build.
                 </p>
               </div>
 
@@ -436,21 +423,27 @@ export default async function Home({
                 {[
                   {
                     day: "01",
-                    title: "Scope it",
-                    copy: "One user, one problem, one core loop. Cut every screen that exists only to impress a judge.",
-                    deliver: "Deliverable: a blank app deployed",
+                    title: "Take one input",
+                    copy: "A single textarea and one button, pre-filled with a real example so the demo works the second the page opens.",
+                    deliver: "Deliverable: the screen renders with sample input",
                   },
                   {
                     day: "02",
-                    title: "Build the loop",
-                    copy: "Make the one path work end to end. Real data, empty states, a loading state that doesn't lie.",
-                    deliver: "Deliverable: the demo path works",
+                    title: "Call the model",
+                    copy: "One server-side request to a hosted LLM, with a system prompt and a structured response. The key never reaches the browser.",
+                    deliver: "Deliverable: a real model response comes back",
                   },
                   {
                     day: "03",
-                    title: "Ship it",
-                    copy: "Deploy, record 60 seconds, submit. Read the baseline review, fix one thing, then the organiser scores it.",
-                    deliver: "Deliverable: live link + review + certificate",
+                    title: "Render the answer",
+                    copy: "Show the output as something readable — a list, a card, a score — with loading and error states so the demo never dies on stage.",
+                    deliver: "Deliverable: the loop works end to end",
+                  },
+                  {
+                    day: "04",
+                    title: "Deploy and position it",
+                    copy: "Ship the live URL, open it on your phone, then write the LinkedIn line and the interview answer that explain what you built.",
+                    deliver: "Deliverable: live link + certificate + resume line",
                   },
                 ].map((row) => (
                   <div key={row.day} className="grid gap-3 py-7 sm:grid-cols-[70px_1fr_1fr] sm:items-start">
@@ -599,10 +592,11 @@ export default async function Home({
                   <p className="text-[10.5px] leading-relaxed text-ink-soft">
                     <strong className="text-ink">ShipWeek is open for VNR VJIET.</strong>
                     <br />
-                    3 days. One deployed project. Free.
+                    60 minutes. One AI project. Free.
                     <br />
-                    You leave with a live link, an organiser-reviewed score and a certificate with your
-                    project's name. Reply "SHIP" and I'll send your seat link.
+                    No AI experience needed: you leave with a live link, an organiser-reviewed
+                    score and a certificate naming what you built. Reply "SHIP" and I'll send
+                    your seat link.
                   </p>
                   <p className="mt-1.5 text-right text-[8px] text-ink-faint">9:14 AM</p>
                 </div>

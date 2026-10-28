@@ -11,7 +11,7 @@ export function AdminAction({
   className = "text-[10px] font-semibold text-accent hover:underline disabled:opacity-50",
 }: {
   id: number;
-  action: "verify" | "checkin" | "captain" | "reset-submission";
+  action: "verify" | "checkin" | "captain" | "reset-submission" | "delete-registrant";
   label: string;
   confirmText?: string;
   className?: string;

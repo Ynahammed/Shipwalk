@@ -31,7 +31,7 @@ export async function sendVerificationEmail(
     "",
     `Your personal referral code is ${input.refCode}.`,
     "",
-    "You signed up for a free 3-day project sprint. We only collected name, email, phone, college, year and branch. Reply to this email if you want your data removed.",
+    "You signed up for a free 60-minute AI build session. We only collected name, email, phone, college, year and branch. Reply to this email if you want your data removed.",
   ].join("\n");
 
   try {
@@ -62,7 +62,7 @@ export async function sendVerificationEmail(
               Your personal referral code is <strong>${escapeHtml(input.refCode)}</strong>.
             </p>
             <p style="font-size:12px;line-height:1.6;color:#8b8b7c;margin:24px 0 0">
-              You signed up for a free 3-day project sprint. We only collected name, email, phone,
+              You signed up for a free 60-minute AI build session. We only collected name, email, phone,
               college, year and branch. Reply to this email if you want your data removed.
             </p>
           </div>

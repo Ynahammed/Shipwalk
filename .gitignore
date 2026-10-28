@@ -17,3 +17,5 @@ freebuff.build.*.log
 /freebuff-sites-build/
 /.open-next/
 /.wrangler/
+
+freebuff.integration.log

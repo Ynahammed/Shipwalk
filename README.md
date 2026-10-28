@@ -30,7 +30,18 @@ Tiers **A, B and C** from the plan are working end to end. Tier D (reminder emai
 
 ### The core loop
 
-`Visit with ?ref=CODE` → generate an idea → 2-step signup → thank-you page with a tracked `/r/CODE` link → email verification → verified referral counts → leaderboard updates → submit a project on day 3 → AI baseline review → organiser review and score → certificate.
+`Visit with ?ref=CODE` → generate an idea → 2-step signup → thank-you page with a tracked `/r/CODE` link → email verification → verified referral counts → leaderboard updates → build the project in the 60-minute session → submit the live URL → AI baseline review → organiser review and score → certificate that lists the four completed modules.
+
+### The session
+
+| Block | Module | What happens |
+| --- | --- | --- |
+| 00–15 min | Foundation & AI APIs | LLM architecture, API keys, environment setup without local headaches |
+| 15–35 min | Hands-on Code Build | Core app logic, system prompts, asynchronous AI streams |
+| 35–50 min | UI & Deployment | Interactive web interface, live shareable URL for recruiters |
+| 50–60 min | Placement Strategy | LinkedIn/resume framing and the top technical interview questions |
+
+The agenda lives in `lib/config.ts` (`agenda`) and is the single source for the landing page's breakdown section and the certificate's completed-modules strip.
 
 ---
 
@@ -172,6 +183,28 @@ npx wrangler dev --config freebuff.wrangler.jsonc --port 8788
 
 ---
 
+## Simulation mode
+
+The dashboard can present a generated campaign of 340 students so every screen can be exercised at
+real scale without touching a real signup. It is a third data mode next to live and the original
+sample campaign, controlled from the strip under the dashboard header.
+
+- **Run it:** **Run 340-student simulation**. It writes 340 registrants, 16 captains, ~74
+  submissions (about two thirds already scored and carrying certificates), 28 aggregated funnel
+  events and 14 colleges, then switches the whole site into simulation mode.
+- **What changes:** every number on the public site and the dashboard is computed from those rows.
+  A banner is rendered above the public nav and in the dashboard, each row keeps the DEMO tag, and
+  certification, review and referral views all work against the simulated students.
+- **Why it cannot leak:** every simulation row is written with `is_demo = 1, demo_kind = 'sim'`.
+  Live queries filter `is_demo = 0`, so a simulation can never enter live totals, the data export or
+  the reward maths. A worker restart purges only the original sample campaign; the simulation stays
+  until it is cleared.
+- **Switch off:** **Back to live data** restores live numbers immediately and keeps the rows.
+- **Delete it:** **Clear simulation** removes only `demo_kind = 'sim'` rows and returns to live mode.
+- **Rebuild:** regenerates from the same deterministic seed, so a repeat demo looks the same.
+
+---
+
 ## Verification performed
 
 - `next build` (Next.js 16.4.3) — compiled and typechecked all routes.
@@ -183,6 +216,16 @@ npx wrangler dev --config freebuff.wrangler.jsonc --port 8788
 - `npm test` — 14 passing: ranking contract against a throwaway D1 (email vs self/admin/pending/demo) and signup/display helper units.
 - Deployed preview (current build): home `/leaderboard` `/kit` `/admin/login` `200`, `/admin` redirects `307`; `/api/stats` reports `demo: 0` after the first request cleared leftover synthetic rows; the public host rejects the legacy `ship2026` passcode with `503`; `purge-demo` without a session returns `401`.
 - Local admin flow: wrong passcode `401`, correct passcode `200`, `purge-demo` removed 277 synthetic rows and `/api/stats` then reported `demo: 0`.
+- Simulation mode locally: seeding returned `340` students / `74` submissions / `28` event rows;
+  `/api/stats` then reported `total: 340, verified: 280, mode: "simulation"`; home and `/leaderboard`
+  rendered `200` with the simulation banner and `sim-` codes; the dashboard showed
+  “Showing 340 synthetic students”; approving a simulated submission with `87` produced
+  “Set by the organiser” on its certificate; `Back to live data` returned `total: 0` while keeping all
+  340 rows; `Clear simulation` removed `462` rows and restored live mode.
+- `npm run test:integration` — 12 passing route-level tests on a real server and D1: submission
+  guard, approval gate, login lockout, export, erasure, session revocation, and four simulation tests
+  (300+ rows all tagged `sim`, unique emails/phones/codes, live rows untouched, banner and leaderboard
+  presentation, mode switch, clear leaving base demo intact).
 
 Not verified: delivery through SMTP2GO (its sender domain was rejected as unverified, so live signups fall back to browser self-confirmation), payment/reward payouts (rewards are copy only, no money movement), and mobile Safari on a physical device.
 
@@ -192,8 +235,14 @@ Not verified: delivery through SMTP2GO (its sender domain was rejected as unveri
 
 - **Tier D is not built:** 24h/1h reminder emails, per-college landing pages and the post-workshop showcase are out of scope, as the plan allows.
 - **Realtime is polling:** the leaderboard refreshes every 8 seconds rather than using WebSockets; the data is still live.
-- **Demo campaign dates are fixed:** `Nov 6–8, 2026`; seeded rows are excluded from the pace window entirely.
-- **Admin access is off by default on deployed workers.** `ADMIN_PASSCODE` must be set as a server secret. The fallback `ship2026` only works on localhost or when `DEMO_DATA=1`, so a published site cannot be opened with a passcode from the repo.
+- **Session date is fixed in config:** `Sat, 7 Nov 2026 · 11:00 AM IST` (`workshop.dates`); the registration campaign still runs over 7 days, and seeded rows are excluded from the pace window entirely.
+- **Admin access is off by default on deployed workers.** `ADMIN_PASSCODE` must be set as a server secret, ideally 16+ characters; the dashboard warns below 12. Login is limited to five failed attempts per IP per 15 minutes, and **Sign out everywhere** rotates a session epoch so every issued cookie dies without changing the passphrase.
+- **Operations:** server errors are captured to `error_log` and shown in the dashboard, **Download data export** produces a JSON backup of every live table, and **Delete** on a student removes their record, submission, events and referral credit.
+- **Link checks:** each submitted URL is fetched once from the server (private addresses refused) and the result is stored with the review, so an unreachable link caps the AI baseline at 35.
+- **Simulation mode is a display mode, not a traffic simulator.** It changes what every read query
+  counts; it does not send students to the site, and simulation rows are deliberately left out of the
+  data export. Real signups made while it is on are still stored normally and reappear the moment you
+  switch back to live data.
 - **SMTP2GO single-sender mode trades polish for no domain.** Mail from a verified single address has no SPF/DKIM alignment for that address, so Gmail can label it “via smtpcorp.com” and spam placement is more likely. The free plan allows 1,000 emails/month, 200/day and 25/hour while no sending domain is verified. Verifying a domain later removes the hourly cap and improves placement; no code change is needed, only a different sender address.
 - **Groq's free tier has rate limits** (published at 30 RPM / 1K requests per day for `openai/gpt-oss-20b`). The app falls back cleanly when a call is rate-limited; a busy live event may need a higher tier or a second provider.
 - **OpenNext warns on Windows.** The build completes; production runs on Linux.
@@ -204,11 +253,11 @@ Not verified: delivery through SMTP2GO (its sender domain was rejected as unveri
 
 ```
 app/
-  page.tsx                    landing page, sprint, generator, leaderboard teaser, FAQ
+  page.tsx                    landing page, 60-minute breakdown, generator, board, FAQ
   leaderboard/                public people + college board
   kit/                        captain kit studio
   thank-you/[code]/           seat, verification, personal link, share studio, rank
-  submit/[code]/              workshop-day submission + existing review
+  submit/[code]/              submission + existing review
   certificate/[code]/         printable certificate
   admin/                      passcode gate + growth dashboard
   api/                        idea, signup, verify, share, kit, submit, copilot,

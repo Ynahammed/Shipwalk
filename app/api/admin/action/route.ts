@@ -1,5 +1,7 @@
-import { isAdmin } from "@/lib/auth";
+import { isAdmin, revokeAdminSessions } from "@/lib/auth";
 import { getDb, purgeDemoRows } from "@/lib/db";
+import { activeSql, getDataMode, setDataMode } from "@/lib/mode";
+import { clearSimulation, seedSimulation } from "@/lib/simulation";
 import { readJson } from "@/lib/utils";
 
 export async function POST(request: Request) {
@@ -11,12 +13,40 @@ export async function POST(request: Request) {
     const body = await readJson(request);
     const action = String(body.action ?? "");
     const db = await getDb();
+    const mode = await getDataMode();
+    const act = activeSql(mode);
 
     // One-way cleanup: removes the synthetic preview campaign (and only that)
     // so a live deployment is left with real registrations only.
     if (action === "purge-demo") {
       const removed = await purgeDemoRows(db);
       return Response.json({ ok: true, removed });
+    }
+
+    if (action === "revoke-sessions") {
+      // Invalidates every issued admin cookie, including the one making this call.
+      await revokeAdminSessions();
+      return Response.json({ ok: true });
+    }
+
+    // Simulation controls. These are the only actions that change which row set
+    // the whole site presents, so they are handled before any id parsing.
+    if (action === "seed-simulation") {
+      const seeded = await seedSimulation(db);
+      await setDataMode("simulation");
+      return Response.json({ ok: true, mode: "simulation", ...seeded });
+    }
+
+    if (action === "clear-simulation") {
+      const removed = await clearSimulation(db);
+      await setDataMode("live");
+      return Response.json({ ok: true, mode: "live", removed });
+    }
+
+    if (action === "set-mode") {
+      const requested = body.mode === "simulation" ? "simulation" : "live";
+      await setDataMode(requested);
+      return Response.json({ ok: true, mode: requested });
     }
 
     const id = Number(body.id);
@@ -27,13 +57,14 @@ export async function POST(request: Request) {
     if (action === "verify") {
       await db
         .prepare(
-          "UPDATE registrants SET verified = 1, confirmation_method = 'admin', verify_token = NULL WHERE id = ? AND is_demo = 0",
+          `UPDATE registrants SET verified = 1, confirmation_method = 'admin', verify_token = NULL WHERE id = ? AND ${act}`,
+        
         )
         .bind(id)
         .run();
     } else if (action === "checkin") {
       await db
-        .prepare("UPDATE registrants SET checked_in = 1 - checked_in WHERE id = ? AND is_demo = 0")
+        .prepare(`UPDATE registrants SET checked_in = 1 - checked_in WHERE id = ? AND ${act}`)
         .bind(id)
         .run();
     } else if (action === "approve-submission") {
@@ -48,7 +79,7 @@ export async function POST(request: Request) {
       }
       const updated = await db
         .prepare(
-          "UPDATE submissions SET final_score = ?, review_status = 'approved', reviewed_at = ? WHERE registrant_id = ? AND is_demo = 0",
+          `UPDATE submissions SET final_score = ?, review_status = 'approved', reviewed_at = ? WHERE registrant_id = ? AND ${activeSql(mode)}`,
         )
         .bind(score, new Date().toISOString(), id)
         .run();
@@ -56,12 +87,31 @@ export async function POST(request: Request) {
         return Response.json({ error: "No live submission for that student." }, { status: 404 });
       }
       return Response.json({ ok: true, score });
+    } else if (action === "delete-registrant") {
+      // Erasure path: removes the student, their submission, events and captain
+      // row, and releases anyone who signed up with their referral code.
+      const target = await db
+        .prepare("SELECT ref_code FROM registrants WHERE id = ? AND is_demo = 0")
+        .bind(id)
+        .first<{ ref_code: string }>();
+      if (!target) {
+        return Response.json({ error: "No live registrant with that id." }, { status: 404 });
+      }
+      await db.batch([
+        db.prepare("DELETE FROM submissions WHERE registrant_id = ?").bind(id),
+        db.prepare("DELETE FROM captains WHERE registrant_id = ?").bind(id),
+        db.prepare("DELETE FROM events WHERE ref_code = ?").bind(target.ref_code),
+        db.prepare("UPDATE registrants SET referred_by = NULL WHERE referred_by = ?").bind(target.ref_code),
+        db.prepare("DELETE FROM registrants WHERE id = ? AND is_demo = 0").bind(id),
+        db.prepare("DELETE FROM colleges WHERE id NOT IN (SELECT DISTINCT college_id FROM registrants)"),
+      ]);
+      return Response.json({ ok: true, deleted: 1 });
     } else if (action === "reset-submission") {
       // Lets an organiser clear a submission that should never have been scored
       // (placeholder text, a link back to this site). The student keeps their
       // seat and can submit again; the old score and certificate stop existing.
       const removed = await db
-        .prepare("DELETE FROM submissions WHERE registrant_id = ? AND is_demo = 0")
+        .prepare(`DELETE FROM submissions WHERE registrant_id = ? AND ${activeSql(mode)}`)
         .bind(id)
         .run();
       if ((removed.meta.changes ?? 0) === 0) {

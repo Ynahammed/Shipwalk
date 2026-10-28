@@ -2,6 +2,7 @@ import { evaluateProject } from "@/lib/ai";
 import { getDb } from "@/lib/db";
 import { getRegistrant } from "@/lib/data";
 import { checkSubmission, MIN_SCORE_FOR_CERTIFICATE } from "@/lib/submit-guard";
+import { formatProbe, probeProjectUrl } from "@/lib/url-probe";
 import { readJson } from "@/lib/utils";
 
 export async function POST(request: Request) {
@@ -47,12 +48,14 @@ export async function POST(request: Request) {
       );
     }
 
+    const probe = await probeProjectUrl(url);
     const evaluation = await evaluateProject({
       name: registrant.name,
       college: registrant.college,
       title,
       url,
       description,
+      linkCheck: formatProbe(probe),
     });
 
     if (evaluation.data.score < MIN_SCORE_FOR_CERTIFICATE) {
@@ -71,8 +74,9 @@ export async function POST(request: Request) {
     await db
       .prepare(
         `INSERT INTO submissions
-          (registrant_id, project_title, project_url, description, score, feedback_json, certificate_id, is_demo, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)`,
+          (registrant_id, project_title, project_url, description, score, feedback_json, certificate_id,
+           url_status, url_checked_at, is_demo, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)`,
       )
       .bind(
         registrant.id,
@@ -82,6 +86,8 @@ export async function POST(request: Request) {
         evaluation.data.score,
         JSON.stringify(evaluation.data),
         certificateId,
+        formatProbe(probe),
+        probe.checkedAt,
         new Date().toISOString(),
       )
       .run();
@@ -96,6 +102,7 @@ export async function POST(request: Request) {
         evaluation: evaluation.data,
         source: evaluation.source,
         aiConfigured: evaluation.source === "llm",
+        linkCheck: formatProbe(probe),
         certificateId,
         reviewStatus: "pending" as const,
       },

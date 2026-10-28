@@ -40,8 +40,8 @@ export default function KitPage() {
                 <p className="eyebrow mt-1 text-ink/50">top-5 reward</p>
               </div>
               <div className="border-l border-ink/20 pl-4">
-                <p className="display text-[32px] leading-none">3</p>
-                <p className="eyebrow mt-1 text-ink/50">days</p>
+                <p className="display text-[32px] leading-none">60</p>
+                <p className="eyebrow mt-1 text-ink/50">minutes</p>
               </div>
             </div>
           </div>
@@ -54,7 +54,7 @@ export default function KitPage() {
             <div className="rounded-xl border border-ink bg-[#fffdf7] p-5">
               <p className="eyebrow text-accent">The playbook</p>
               <h2 className="display mt-2 text-[34px] leading-none">
-                Three messages, one day.
+                Three messages, one hour.
               </h2>
               <ol className="mt-5 space-y-4">
                 {[

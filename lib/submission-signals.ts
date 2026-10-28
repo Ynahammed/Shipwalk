@@ -1,7 +1,7 @@
 /**
  * Review-only signals for the organiser. None of this blocks a submission or
  * changes a score; it just points at text that does not read like one student
- * shipping a project in three evenings.
+ * shipping a first AI project in a single hour-long session.
  */
 export function submissionFlags(input: {
   title: string;
@@ -22,7 +22,7 @@ export function submissionFlags(input: {
       description,
     );
   if (longTimeline) {
-    flags.push("Describes a timeline longer than the 3-day sprint.");
+    flags.push("Describes a timeline longer than one 60-minute session.");
   }
 
   const team =

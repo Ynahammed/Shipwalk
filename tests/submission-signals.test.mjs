@@ -25,12 +25,12 @@ describe("submission review signals", () => {
     assert.ok(flags.some((flag) => /No specific feature/i.test(flag)), flags.join(" | "));
   });
 
-  it("leaves a genuine solo 3-day build unflagged", () => {
+  it("leaves a genuine solo 60-minute AI build unflagged", () => {
     const flags = submissionFlags({
-      title: "CampusBus",
-      url: "https://campusbus.workers.dev",
+      title: "DeadlineDecoder",
+      url: "https://deadlinedecoder.workers.dev",
       description:
-        "I built a live shuttle tracker for one campus route. Students open the page and see the next bus, its position on a small map, and a walking ETA; the driver taps one button when leaving the gate. I used Next.js and Cloudflare D1, then tested it with forty students for a week and the average wait dropped by six minutes.",
+        "I paste a syllabus and get back one table of deliverables and dates, plus what to start tonight. One server route calls a hosted LLM with a strict JSON schema and the page renders the rows as cards; rows without a parseable date are dropped instead of guessed. I built it with Next.js in the session and opened it to two friends during the placement block.",
     });
     assert.deepEqual(flags, []);
   });

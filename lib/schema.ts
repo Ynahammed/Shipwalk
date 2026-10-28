@@ -31,6 +31,7 @@ export const SCHEMA_STATEMENTS: string[] = [
     idea_json TEXT,
     checked_in INTEGER NOT NULL DEFAULT 0,
     is_demo INTEGER NOT NULL DEFAULT 0,
+    demo_kind TEXT NOT NULL DEFAULT 'demo',
     created_at TEXT NOT NULL,
     FOREIGN KEY (college_id) REFERENCES colleges(id)
   )`,
@@ -56,7 +57,9 @@ export const SCHEMA_STATEMENTS: string[] = [
     session_id TEXT,
     device_id TEXT,
     ip_hash TEXT,
+    qty INTEGER NOT NULL DEFAULT 1,
     is_demo INTEGER NOT NULL DEFAULT 0,
+    demo_kind TEXT NOT NULL DEFAULT 'demo',
     created_at TEXT NOT NULL
   )`,
   `CREATE INDEX IF NOT EXISTS idx_events_type_created ON events (type, created_at)`,
@@ -84,6 +87,7 @@ export const SCHEMA_STATEMENTS: string[] = [
     review_status TEXT NOT NULL DEFAULT 'pending',
     reviewed_at TEXT,
     is_demo INTEGER NOT NULL DEFAULT 0,
+    demo_kind TEXT NOT NULL DEFAULT 'demo',
     created_at TEXT NOT NULL,
     FOREIGN KEY (registrant_id) REFERENCES registrants(id)
   )`,
@@ -116,6 +120,29 @@ export const SCHEMA_STATEMENTS: string[] = [
     ideas INTEGER NOT NULL,
     signup_starts INTEGER NOT NULL,
     share_clicks INTEGER NOT NULL
+  )`,
+
+  // Admin login throttling: one row per failed attempt, pruned by age.
+  `CREATE TABLE IF NOT EXISTS admin_attempts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ip_hash TEXT NOT NULL,
+    created_at TEXT NOT NULL
+  )`,
+  `CREATE INDEX IF NOT EXISTS admin_attempts_ip ON admin_attempts (ip_hash, created_at)`,
+
+  // Small key/value store. `admin_epoch` invalidates every issued admin cookie.
+  `CREATE TABLE IF NOT EXISTS app_settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+  )`,
+
+  // Server errors captured by instrumentation, so one bad deploy is visible.
+  `CREATE TABLE IF NOT EXISTS error_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    message TEXT NOT NULL,
+    path TEXT,
+    digest TEXT,
+    created_at TEXT NOT NULL
   )`,
 ];
 
