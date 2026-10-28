@@ -74,6 +74,29 @@ async function init(): Promise<D1Database> {
     await env.DB.exec("ALTER TABLE registrants ADD COLUMN email_sent INTEGER NOT NULL DEFAULT 0");
   }
 
+  // The AI score is only a baseline. A certificate requires an organiser score,
+  // stored separately so the two can never be confused.
+  const submissionColumns = await env.DB
+    .prepare("PRAGMA table_info(submissions)")
+    .all<{ name: string }>();
+  const hasSubmissionColumn = (name: string) =>
+    (submissionColumns.results ?? []).some((column) => column.name === name);
+  if (!hasSubmissionColumn("final_score")) {
+    await env.DB.exec("ALTER TABLE submissions ADD COLUMN final_score INTEGER");
+  }
+  if (!hasSubmissionColumn("review_status")) {
+    await env.DB.exec(
+      "ALTER TABLE submissions ADD COLUMN review_status TEXT NOT NULL DEFAULT 'pending'",
+    );
+    // Seeded demo certificates stay printable; every live row waits for a human.
+    await env.DB
+      .prepare("UPDATE submissions SET review_status = 'approved', final_score = score WHERE is_demo = 1")
+      .run();
+  }
+  if (!hasSubmissionColumn("reviewed_at")) {
+    await env.DB.exec("ALTER TABLE submissions ADD COLUMN reviewed_at TEXT");
+  }
+
   await env.DB.batch(VIEW_STATEMENTS.map((sql) => env.DB.prepare(sql)));
 
   // Seeding is a local preview convenience. The loopback check matters because

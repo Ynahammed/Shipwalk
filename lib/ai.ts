@@ -589,15 +589,27 @@ export async function evaluateProject(input: {
   description: string;
 }): Promise<{ data: Evaluation; source: AiSource; model: string | null }> {
   const fallback = fallbackEvaluation(input);
-  const system = `You evaluate final-year student projects from a 3-day build sprint. Be specific, fair and useful.
+  const system = `You evaluate final-year student projects from a 3-day build sprint. You receive text only: a title, a URL string and a description.
 
-Rules:
-- Score 0-100. 60-85 for a completed small project, 86-94 for a deployed project with evidence of users. 95+ is reserved for exceptional, real-world traction.
-- Strengths must reference what is actually in the submission, not generic praise.
-- The next step is one concrete fix, achievable this week.
-- No invented facts about the project.
+What you cannot see:
+- You cannot open the URL, run the app, read the repo, or count users. A URL in the submission proves only that a link was typed.
+- Never say the project is deployed, live, accessible, working, or used by anyone. Never call a link a strength by itself.
+
+How to score (0-100, anchored — pick the band before picking a number):
+- 0-15: not a reviewable project. Gibberish, placeholder text, keyboard mash, a link back to the submission form, or no described functionality.
+- 16-35: an idea or a landing page, with no working feature described.
+- 36-55: part of a core loop described, or a very early prototype.
+- 56-75: one complete loop described end to end, with a specific user and specific features.
+- 76-88: a complete loop plus concrete evidence in the description: real users tested it, measured results, a demo link described in words.
+- 89-100: exceptional traction with specific numbers a reviewer can verify from the text.
+
+Hard rules:
+- If the description is shorter than three sentences or never names a user and a feature, score at most 15.
+- Strengths must quote what the description actually says. For a 0-15 score, state plainly what is missing instead of inventing strengths.
+- next_step is one concrete fix, achievable this week.
+- The certificate_text must not claim deployment, users or results.
 Return ONLY valid JSON:
-{"score":82,"strengths":["...","...","..."],"next_step":"...","certificate_text":"one sentence naming the project and outcome"}`;
+{"score":0,"strengths":["...","..."],"next_step":"...","certificate_text":"one sentence naming the project and what it does"}`;
 
   const user = `Student: ${input.name} (${input.college})\nProject title: ${input.title}\nProject URL: ${input.url}\nDescription: ${input.description || "(no description provided)"}`;
 

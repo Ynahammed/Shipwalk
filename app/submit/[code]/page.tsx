@@ -66,9 +66,11 @@ export default async function SubmitPage({
               You shipped it, {registrant.name.split(" ")[0]}.
             </h1>
             <p className="mt-3 max-w-[560px] text-[14px] leading-relaxed text-ink-soft">
-              This is the review the evaluator returned for{" "}
-              <strong className="text-ink">{submission.project_title}</strong>. The printable
-              certificate is ready.
+              This is the AI baseline for{" "}
+              <strong className="text-ink">{submission.project_title}</strong>.{" "}
+              {submission.review_status === "approved"
+                ? "Your organiser has reviewed it and the printable certificate is ready."
+                : "Your organiser reads the project and sets the final score before the certificate is issued."}
             </p>
 
             <div className="mt-7">
@@ -77,19 +79,23 @@ export default async function SubmitPage({
                   evaluation={evaluation}
                   projectTitle={submission.project_title}
                   certificateHref={`/certificate/${registrant.ref_code}`}
+                  status={submission.review_status === "approved" ? "approved" : "pending"}
                 />
               ) : (
                 <div className="card-flat p-6">
-                  <p className="eyebrow text-ink-faint">Project score</p>
+                  <p className="eyebrow text-ink-faint">AI baseline</p>
                   <p className="display mt-2 text-[56px] leading-none">
                     {submission.score ?? "—"}
                     <span className="text-[20px] text-ink-faint"> / 100</span>
                   </p>
                   <Link
                     href={`/certificate/${registrant.ref_code}`}
-                    className="btn btn-primary mt-4"
+                    className="btn btn-ghost mt-4"
                   >
-                    Open certificate <ArrowUpRight />
+                    {submission.review_status === "approved"
+                      ? "Open certificate"
+                      : "Check review status"}{" "}
+                    <ArrowUpRight />
                   </Link>
                 </div>
               )}
@@ -121,8 +127,8 @@ export default async function SubmitPage({
               </h1>
               <p className="mt-4 max-w-[480px] text-[14.5px] leading-relaxed text-ink-soft">
                 A deployed link, one paragraph about the problem and the loop, and you're
-                done. The evaluator reads it, scores it, and writes the certificate text
-                around your project's name.
+                done. The AI gives you a baseline review; the organiser reads the project,
+                sets the score you keep, and issues the certificate.
               </p>
 
               <div className="mt-7 rounded-lg border border-line bg-[#fffdf7] p-4">
@@ -156,8 +162,8 @@ export default async function SubmitPage({
               </div>
 
               <p className="mt-7 max-w-[460px] text-[10.5px] leading-relaxed text-ink-faint">
-                Scores are generated feedback, not a placement guarantee. One submission per
-                seat; the certificate ID is permanent. Demo data is labelled everywhere.
+                AI scores are a baseline only. Your organiser's score is the result that goes on
+                the certificate. One submission per seat; demo data is labelled everywhere.
               </p>
             </div>
 

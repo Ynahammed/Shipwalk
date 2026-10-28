@@ -212,7 +212,7 @@ export async function getAdminOverview(): Promise<AdminOverview> {
         `SELECT s.*, r.name, r.ref_code, r.college_id, r.checked_in
          FROM submissions s JOIN registrants r ON r.id = s.registrant_id
          WHERE s.is_demo = 0 AND r.is_demo = 0
-         ORDER BY s.score DESC LIMIT 10`,
+         ORDER BY CASE WHEN s.review_status = 'approved' THEN 1 ELSE 0 END, s.created_at ASC LIMIT 10`,
       )
       .all<SubmissionRow>(),
     db

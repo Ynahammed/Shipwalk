@@ -1,6 +1,6 @@
 # ShipWeek — Workshop Growth OS
 
-A working implementation of the **Workshop Growth OS** architecture and build plan: a student goes from first click → generated project idea → verified signup → personal referral link → leaderboard → project submission → AI review → certificate. The organiser gets a growth dashboard with funnel, pace, sources, college standings, fraud review and a daily copilot move.
+A working implementation of the **Workshop Growth OS** architecture and build plan: a student goes from first click → generated project idea → verified signup → personal referral link → leaderboard → project submission → AI baseline review → organiser score → certificate. The organiser gets a growth dashboard with funnel, pace, sources, college standings, fraud review and a daily copilot move.
 
 **Live preview:** https://site-fe0b5fbb10f54fb1b95fe7e206ddcdef.freebuff.page
 
@@ -30,7 +30,7 @@ Tiers **A, B and C** from the plan are working end to end. Tier D (reminder emai
 
 ### The core loop
 
-`Visit with ?ref=CODE` → generate an idea → 2-step signup → thank-you page with a tracked `/r/CODE` link → email verification → verified referral counts → leaderboard updates → submit a project on day 3 → AI review → certificate.
+`Visit with ?ref=CODE` → generate an idea → 2-step signup → thank-you page with a tracked `/r/CODE` link → email verification → verified referral counts → leaderboard updates → submit a project on day 3 → AI baseline review → organiser review and score → certificate.
 
 ---
 

@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
 const faqs = [
   {
     q: "Is it actually free?",
-    a: "Yes. The 3-day sprint, the AI project review and the certificate are free. The only money in the system is a fixed ₹1,000 referral pool for the top five verified referrers. There is no card, no upsell and no paid tier hiding behind the form.",
+    a: "Yes. The 3-day sprint, the AI baseline review, the organiser's score and the certificate are free. The only money in the system is a fixed ₹1,000 referral pool for the top five verified referrers. There is no card, no upsell and no paid tier hiding behind the form.",
   },
   {
     q: "I'm not from CSE. Can I build anything?",
@@ -33,11 +33,11 @@ const faqs = [
   },
   {
     q: "Do I need to attend all three days?",
-    a: "There are no live lectures to miss. You build at your own pace across the three days. You do need to submit a working project by the end of day 3 to get the AI review and certificate.",
+    a: "There are no live lectures to miss. You build at your own pace across the three days. You do need to submit a working project by the end of day 3 to get your review and certificate.",
   },
   {
     q: "What does the AI review actually do?",
-    a: "It scores your submitted project out of 100, names three specific strengths and gives you one concrete next step. The certificate carries your project's name and score. It is feedback, not a placement guarantee, and every score is labelled as generated feedback.",
+    a: "It gives you a baseline score out of 100, the strengths it sees and one concrete next step — immediately, as feedback. That number is not your result: the organiser reads every submission, sets the final score, and only then is the certificate issued. Nothing is presented as a placement guarantee.",
   },
   {
     q: "What data do you collect?",
@@ -101,8 +101,8 @@ export default async function Home({
 
               <p className="mt-6 max-w-[560px] text-[16px] leading-relaxed text-ink-soft sm:text-[17px]">
                 ShipWeek is a free 3-day sprint for final-year students. Pick a problem,
-                build one working thing, and walk out with a live link, an AI review, and a
-                certificate that carries your project's name.
+                build one working thing, and walk out with a live link, an AI baseline review, an
+                organiser score, and a certificate that carries your project's name.
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -261,7 +261,7 @@ export default async function Home({
                 },
                 {
                   title: "Ship and defend it",
-                  body: "Deploy, record a 60-second demo, and submit. The AI reviewer gives you a score, three strengths and the one fix that matters next.",
+                  body: "Deploy, record a 60-second demo, and submit. The AI gives you a baseline score; the organiser reads it and sets the final one.",
                   tag: "Day 3 · Ship",
                 },
               ].map((step, index) => (
@@ -381,7 +381,7 @@ export default async function Home({
                 <p className="eyebrow mt-6 text-ink-faint">02 · The read</p>
                 <h3 className="display mt-2 text-[30px] leading-none">A specific review</h3>
                 <p className="mt-3 text-[12.5px] leading-relaxed text-ink-soft">
-                  A score, three strengths and one next step. Feedback you can act on, not a
+                  A score, its strengths and one next step. Feedback you can act on, not a
                   gold-star sticker.
                 </p>
               </div>
@@ -449,7 +449,7 @@ export default async function Home({
                   {
                     day: "03",
                     title: "Ship it",
-                    copy: "Deploy, record 60 seconds, submit. Read the AI review, fix one thing, then print the certificate.",
+                    copy: "Deploy, record 60 seconds, submit. Read the baseline review, fix one thing, then the organiser scores it.",
                     deliver: "Deliverable: live link + review + certificate",
                   },
                 ].map((row) => (
@@ -601,7 +601,7 @@ export default async function Home({
                     <br />
                     3 days. One deployed project. Free.
                     <br />
-                    You leave with a live link, an AI review and a certificate with your
+                    You leave with a live link, an organiser-reviewed score and a certificate with your
                     project's name. Reply "SHIP" and I'll send your seat link.
                   </p>
                   <p className="mt-1.5 text-right text-[8px] text-ink-faint">9:14 AM</p>

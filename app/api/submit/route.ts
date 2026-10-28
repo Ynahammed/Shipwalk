@@ -1,6 +1,7 @@
 import { evaluateProject } from "@/lib/ai";
 import { getDb } from "@/lib/db";
 import { getRegistrant } from "@/lib/data";
+import { checkSubmission, MIN_SCORE_FOR_CERTIFICATE } from "@/lib/submit-guard";
 import { readJson } from "@/lib/utils";
 
 export async function POST(request: Request) {
@@ -11,14 +12,16 @@ export async function POST(request: Request) {
     const url = String(body.url ?? "").trim().slice(0, 300);
     const description = String(body.description ?? "").trim().slice(0, 1400);
 
-    if (title.length < 2) {
-      return Response.json({ error: "Give your project a name." }, { status: 400 });
-    }
-    if (!/^https?:\/\/[^\s]+\.[^\s]+$/i.test(url)) {
-      return Response.json(
-        { error: "Paste the full link, starting with https://." },
-        { status: 400 },
-      );
+    // Reject placeholders, keyboard mash and self-referential links before any
+    // model call, so a non-submission can never earn a score or a certificate.
+    const guard = checkSubmission({
+      title,
+      url,
+      description,
+      requestUrl: request.url,
+    });
+    if (!guard.ok) {
+      return Response.json({ error: guard.error }, { status: 422 });
     }
 
     const registrant = await getRegistrant(code);
@@ -52,6 +55,18 @@ export async function POST(request: Request) {
       description,
     });
 
+    if (evaluation.data.score < MIN_SCORE_FOR_CERTIFICATE) {
+      return Response.json(
+        {
+          error:
+            "The reviewer could not find a project to score. Add what it does, who uses it, and the one thing that works today, then submit again.",
+          evaluation: evaluation.data,
+          source: evaluation.source,
+        },
+        { status: 422 },
+      );
+    }
+
     const certificateId = `SW-26-${String(registrant.id).padStart(4, "0")}`;
     await db
       .prepare(
@@ -82,6 +97,7 @@ export async function POST(request: Request) {
         source: evaluation.source,
         aiConfigured: evaluation.source === "llm",
         certificateId,
+        reviewStatus: "pending" as const,
       },
       { status: 201 },
     );

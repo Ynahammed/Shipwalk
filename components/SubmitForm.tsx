@@ -7,10 +7,9 @@ import { EvaluationCard } from "./EvaluationCard";
 import { ArrowUpRight, SparkIcon } from "./icons";
 
 const SAMPLE = {
-  title: "CampusBus — live shuttle tracking",
-  url: "https://campusbus-demo.example.com",
+  title: "CampusBus — live shuttle tracking",    url: "https://campusbus.example.workers.dev",
   description:
-    "A live college shuttle tracker with route ETAs, a driver view, and a WhatsApp alert when the bus leaves the main gate. Built with Next.js, Supabase Realtime and Leaflet. Tested with 40 students for a week; the average wait dropped by six minutes in the pilot.",
+    "A live college shuttle tracker with route ETAs, a driver view, and a WhatsApp alert when the bus leaves the main gate. Built with Next.js and Cloudflare D1. Tested with 40 students for a week; the average wait dropped by six minutes in the pilot.",
 };
 
 export function SubmitForm({ code }: { code: string }) {
@@ -21,7 +20,7 @@ export function SubmitForm({ code }: { code: string }) {
   const [error, setError] = useState("");
   const [evaluation, setEvaluation] = useState<Evaluation | null>(null);
   const [source, setSource] = useState<string>("fallback");
-  const [certificateId, setCertificateId] = useState<string | null>(null);
+  const [reviewStatus, setReviewStatus] = useState<"pending" | "approved">("pending");
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -40,7 +39,7 @@ export function SubmitForm({ code }: { code: string }) {
       const data = (await response.json()) as {
         evaluation?: Evaluation;
         source?: string;
-        certificateId?: string;
+        reviewStatus?: "pending" | "approved";
         error?: string;
       };
       if (!response.ok || !data.evaluation) {
@@ -48,7 +47,7 @@ export function SubmitForm({ code }: { code: string }) {
       }
       setEvaluation(data.evaluation);
       setSource(data.source ?? "fallback");
-      setCertificateId(data.certificateId ?? null);
+      setReviewStatus(data.reviewStatus ?? "pending");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Submission failed. Try again.");
     } finally {
@@ -64,16 +63,19 @@ export function SubmitForm({ code }: { code: string }) {
           projectTitle={title}
           certificateHref={`/certificate/${code}`}
           source={source}
+          status={reviewStatus}
         />
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-line bg-[#fffdf7] px-4 py-3">
           <p className="text-[11px] leading-relaxed text-ink-soft">
-            Certificate {certificateId} is ready. It carries your project name and score.
+            {reviewStatus === "approved"
+              ? "Your organiser has reviewed this submission and the certificate is ready."
+              : "Submitted. The organiser reads the project and sets the final score; the certificate appears after that."}
           </p>
           <Link
-            href={`/certificate/${code}`}
+            href={`/thank-you/${code}`}
             className="text-[11px] font-semibold text-accent hover:underline"
           >
-            Open printable certificate →
+            Back to your seat →
           </Link>
         </div>
       </div>
@@ -121,7 +123,7 @@ export function SubmitForm({ code }: { code: string }) {
             onChange={(event) => setUrl(event.target.value)}
           />
           <p className="mt-1 text-[10px] text-ink-faint">
-            A deployed link, not only a GitHub repo. The reviewer scores what it can open.
+            Your own deployed link, not this site and not a repo. The reviewer reads the description; it cannot open the link for you.
           </p>
         </div>
         <div>
@@ -137,7 +139,7 @@ export function SubmitForm({ code }: { code: string }) {
             onChange={(event) => setDescription(event.target.value)}
           />
           <div className="mt-1 flex justify-between text-[10px] text-ink-faint">
-            <span>Specific beats polished.</span>
+            <span>Specific beats polished. At least 60 characters: who uses it and what works.</span>
             <span className="mono">{description.length} / 1400</span>
           </div>
         </div>

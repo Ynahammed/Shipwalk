@@ -339,8 +339,8 @@ export function fallbackEvaluation(input: {
   description: string;
   name: string;
 }): Evaluation {
-  const description = input.description || "";
-  const words = description.trim().split(/\s+/).filter(Boolean).length;
+  const description = input.description.replace(/\s+/g, " ").trim();
+  const words = description.split(" ").filter((word) => word.length > 1).length;
   const isRepo = /github\.com|gitlab\.com|bitbucket\.org/i.test(input.url);
   const mentionsUsers = /\b(user|users|students|deployed|live|pilot|tested|waitlist|people)\b/i.test(
     description,
@@ -349,24 +349,45 @@ export function fallbackEvaluation(input: {
     description,
   );
 
-  let score = 54;
-  if (/^https?:\/\//.test(input.url)) score += 10;
-  if (isRepo) score -= 8;
-  if (words >= 60) score += 7;
-  if (words >= 140) score += 5;
-  if (mentionsUsers) score += 9;
+  // The reviewer never opens the link, so the text has to carry the evidence:
+  // several sentences and at least one concrete detail, not generic praise.
+  const sentences = description.split(/[.!?]+/).filter((part) => part.trim().length > 15).length;
+  const concrete =
+    /\b(map|search|queue|score|button|form|list|upload|notify|alert|chart|calendar|login|api|database|d1|next\.js|workers|track|dashboard|filter|export|match|rank|schedule|slot|vote|claim|request|photo|payment|ticket)\b/i.test(
+      description,
+    ) || /\d/.test(description);
+  const reviewable = sentences >= 2 && words >= 30 && concrete;
+
+  if (!reviewable) {
+    return {
+      score: Math.min(24, 4 + Math.min(words, 20)),
+      strengths: [
+        "A submission was received, but it does not describe what the project does.",
+        "There is no stated user, feature or working flow for a reviewer to judge.",
+      ],
+      next_step:
+        "Rewrite the description: one sentence on who uses it, one on the core loop, and one on what already works today.",
+      certificate_text: `${input.title} was submitted without enough detail to review.`,
+    };
+  }
+
+  let score = 34;
+  if (isRepo) score += 4;
+  if (words >= 60) score += 10;
+  if (words >= 140) score += 6;
+  if (mentionsUsers) score += 10;
   if (mentionsStack) score += 5;
-  score = Math.max(52, Math.min(94, score));
+  score = Math.max(30, Math.min(78, score));
 
   const strengths = [
     isRepo
-      ? "You shipped a real codebase rather than a slide deck."
-      : "You have a working deployment, not just a local demo.",
+      ? "The codebase is linked, so a reviewer can read the implementation."
+      : "The project has a URL a reviewer can open in their own browser.",
     mentionsUsers
-      ? "The description shows evidence of real users or a real pilot."
-      : "The project has a clear, specific problem it is solving.",
+      ? "The description names real users or a real pilot."
+      : "The description explains the problem the project is solving.",
     mentionsStack
-      ? "You can explain the stack, which makes the project easier to defend in an interview."
+      ? "The description names the stack, which makes the project easier to defend in an interview."
       : "The scope is small enough to finish and demo confidently.",
   ];
 
@@ -376,7 +397,7 @@ export function fallbackEvaluation(input: {
     next_step: isRepo
       ? "Deploy the project and put the live URL at the top of the submission; a repo alone is not a shipped product."
       : "Record a 30-second screen demo and add one real user quote to the project page before the showcase.",
-    certificate_text: `Built ${input.title}, shipped it during ShipWeek, and earned a project score of ${score}/100.`,
+    certificate_text: `Built ${input.title} during ShipWeek and documented what it does; project score ${score}/100.`,
   };
 }
 

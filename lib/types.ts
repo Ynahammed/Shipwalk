@@ -84,6 +84,9 @@ export type SubmissionRow = {
   score: number | null;
   feedback_json: string | null;
   certificate_id: string | null;
+  final_score: number | null;
+  review_status: "pending" | "approved";
+  reviewed_at: string | null;
   is_demo: number;
   created_at: string;
   name?: string;

@@ -288,7 +288,7 @@ export default async function ThankYouPage({
                   },
                   {
                     title: "Submit on day 3",
-                    body: "Paste the link, get your AI review and certificate.",
+                    body: "Paste the link for an AI baseline review. The organiser sets the final score and issues the certificate.",
                   },
                 ].map((item, index) => (
                   <li key={item.title} className="flex gap-3">
@@ -340,15 +340,25 @@ export default async function ThankYouPage({
               <p className="eyebrow text-ink-faint">Workshop day</p>
               {submission ? (
                 <>
-                  <h2 className="display mt-1.5 text-[28px] leading-none">Already shipped.</h2>
+                  <h2 className="display mt-1.5 text-[28px] leading-none">
+                    {submission.review_status === "approved"
+                      ? "Reviewed and certified."
+                      : "With the organiser."}
+                  </h2>
                   <p className="mt-2 text-[11.5px] leading-relaxed text-ink-soft">
-                    {submission.project_title} scored {submission.score}/100.
+                    {submission.project_title} · AI baseline {submission.score ?? "—"}/100.{" "}
+                    {submission.review_status === "approved"
+                      ? `Organiser score ${submission.final_score ?? submission.score}/100.`
+                      : "The organiser reads the project, sets the final score and issues the certificate."}
                   </p>
                   <Link
                     href={`/certificate/${registrant.ref_code}`}
                     className="btn btn-primary mt-3 w-full !py-2.5 text-[12px]"
                   >
-                    Open certificate <ArrowUpRight className="h-3.5 w-3.5" />
+                    {submission.review_status === "approved"
+                      ? "Open certificate"
+                      : "Check review status"}{" "}
+                    <ArrowUpRight className="h-3.5 w-3.5" />
                   </Link>
                 </>
               ) : (

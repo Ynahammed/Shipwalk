@@ -1,9 +1,12 @@
 import Link from "next/link";
+import { Fragment } from "react";
 import { DemoTag } from "@/components/DemoTag";
 import { ArrowUpRight, Check, SparkIcon } from "@/components/icons";
-import type { AdminOverview } from "@/lib/types";
+import type { AdminOverview, Evaluation } from "@/lib/types";
+import { submissionFlags } from "@/lib/submission-signals";
 import { maskEmail, percent, timeAgo } from "@/lib/utils";
 import { AdminAction } from "./AdminAction";
+import { AdminSubmissionReview } from "./AdminSubmissionReview";
 import { AdminPurgeDemo } from "./AdminPurgeDemo";
 import { CopilotCard } from "./CopilotCard";
 import { FunnelBars } from "./FunnelBars";
@@ -17,6 +20,15 @@ const NAV = [
   { href: "#workshop", label: "Workshop day" },
   { href: "#ai", label: "AI logs" },
 ];
+
+function parseEvaluation(json: string | null): Evaluation | null {
+  if (!json) return null;
+  try {
+    return JSON.parse(json) as Evaluation;
+  } catch {
+    return null;
+  }
+}
 
 function SourceTag({ source }: { source: string }) {
   const cls =
@@ -459,6 +471,12 @@ export function AdminDashboard({ overview }: { overview: AdminOverview }) {
             </div>
             <div className="flex gap-4 text-[10px] text-ink-soft">
               <span><strong className="text-ink">{totals.liveSubmissions}</strong> submitted</span>
+              <span>
+                <strong className="text-ink">
+                  {overview.submissions.filter((row) => row.review_status !== "approved").length}
+                </strong>{" "}
+                awaiting review
+              </span>
               <span><strong className="text-ink">{totals.checkedIn}</strong> checked in</span>
             </div>
           </div>
@@ -475,8 +493,19 @@ export function AdminDashboard({ overview }: { overview: AdminOverview }) {
                 </tr>
               </thead>
               <tbody>
-                {overview.submissions.map((submission) => (
-                  <tr key={submission.id}>
+                {overview.submissions.map((submission) => {
+                  const evaluation = parseEvaluation(submission.feedback_json);
+                  const flags =
+                    submission.is_demo === 0
+                      ? submissionFlags({
+                          title: submission.project_title,
+                          description: submission.description ?? "",
+                          url: submission.project_url,
+                        })
+                      : [];
+                  return (
+                  <Fragment key={submission.id}>
+                  <tr>
                     <td>
                       <a
                         href={submission.project_url}
@@ -490,14 +519,40 @@ export function AdminDashboard({ overview }: { overview: AdminOverview }) {
                         {submission.is_demo === 1 && <DemoTag />}
                         {submission.certificate_id}
                       </p>
+                      <p className="mt-1 max-w-[280px] text-[10px] leading-relaxed text-ink-soft">
+                        {submission.description
+                          ? submission.description.length > 110
+                            ? `${submission.description.slice(0, 110)}…`
+                            : submission.description
+                          : "No description written."}
+                      </p>
+                      {flags.length > 0 && (
+                        <p
+                          className="mt-1.5"
+                          title={flags.join("\n")}
+                        >
+                          <span className="tag !border-[#e2b06a] !bg-[#fdf1dc] !text-[#8a5109]">
+                            Check: {flags.length} signal{flags.length === 1 ? "" : "s"}
+                          </span>
+                        </p>
+                      )}
                     </td>
                     <td>
                       <p className="text-[11px]">{submission.name}</p>
                       <p className="mono text-[9px] text-ink-faint">@{submission.ref_code}</p>
                     </td>
                     <td className="text-right">
-                      <span className="display text-[22px]">{submission.score ?? "—"}</span>
+                      <span className="display text-[22px]">
+                        {submission.review_status === "approved"
+                          ? (submission.final_score ?? submission.score ?? "—")
+                          : (submission.score ?? "—")}
+                      </span>
                       <span className="text-[9px] text-ink-faint"> /100</span>
+                      <p className="text-[9px] text-ink-faint">
+                        {submission.review_status === "approved"
+                          ? "organiser"
+                          : `AI baseline${submission.score !== null ? " · unverified" : ""}`}
+                      </p>
                     </td>
                     <td>
                       {submission.checked_in ? (
@@ -516,17 +571,103 @@ export function AdminDashboard({ overview }: { overview: AdminOverview }) {
                       </div>
                     </td>
                     <td className="text-right">
-                      {submission.ref_code && (
-                        <Link
-                          href={`/certificate/${submission.ref_code}`}
-                          className="text-[10px] font-semibold text-accent hover:underline"
-                        >
-                          Open
-                        </Link>
+                      {submission.is_demo === 0 && submission.review_status !== "approved" ? (
+                        <AdminSubmissionReview
+                          id={submission.registrant_id}
+                          baseline={submission.score ?? null}
+                        />
+                      ) : (
+                        submission.ref_code && (
+                          <Link
+                            href={`/certificate/${submission.ref_code}`}
+                            className="text-[10px] font-semibold text-accent hover:underline"
+                          >
+                            Open
+                          </Link>
+                        )
+                      )}
+                      {submission.is_demo === 0 && (
+                        <div className="mt-1">
+                          <AdminAction
+                            id={submission.registrant_id}
+                            action="reset-submission"
+                            label="Reset"
+                            confirmText={`Delete the review and certificate for "${submission.project_title}"? The student keeps their seat and can submit again.`}
+                            className="text-[10px] font-semibold text-[#96310f] hover:underline disabled:opacity-50"
+                          />
+                        </div>
                       )}
                     </td>
                   </tr>
-                ))}
+                  <tr className="!border-t-0">
+                    <td colSpan={5} className="!pt-0">
+                      <details className="rounded border border-line bg-paper-2 px-3 py-2">
+                        <summary className="cursor-pointer text-[10px] font-semibold text-accent">
+                          Read the full submission and AI baseline
+                        </summary>
+                        <div className="mt-3 grid gap-4 sm:grid-cols-[1.3fr_1fr]">
+                          <div>
+                            {flags.length > 0 && (
+                              <div className="mb-3 rounded border border-[#e2b06a] bg-[#fdf1dc] px-3 py-2">
+                                <p className="eyebrow text-[#8a5109]">
+                                  Not obviously a 3-day solo build
+                                </p>
+                                <ul className="mt-1 space-y-1">
+                                  {flags.map((flag) => (
+                                    <li key={flag} className="text-[10.5px] leading-relaxed text-[#7a4a08]">
+                                      • {flag}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            <p className="eyebrow text-ink-faint">What they wrote</p>
+                            <p className="mt-1 whitespace-pre-line text-[11.5px] leading-relaxed text-ink-soft">
+                              {submission.description || "No description was provided."}
+                            </p>
+                            <a
+                              href={submission.project_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="mt-2 inline-flex items-center gap-1 text-[10px] font-semibold text-accent hover:underline"
+                            >
+                              Open the project <ArrowUpRight className="h-3 w-3" />
+                            </a>
+                          </div>
+                          <div>
+                            <p className="eyebrow text-ink-faint">
+                              AI baseline {submission.score ?? "—"}/100
+                            </p>
+                            {evaluation ? (
+                              <>
+                                <ul className="mt-1.5 space-y-1.5">
+                                  {evaluation.strengths.map((strength) => (
+                                    <li
+                                      key={strength}
+                                      className="flex gap-1.5 text-[11px] leading-relaxed text-ink-soft"
+                                    >
+                                      <Check className="mt-0.5 h-3 w-3 shrink-0 text-[#2c8a57]" />
+                                      {strength}
+                                    </li>
+                                  ))}
+                                </ul>
+                                <p className="mt-2 text-[10.5px] leading-relaxed text-ink-faint">
+                                  Suggested next step: {evaluation.next_step}
+                                </p>
+                              </>
+                            ) : (
+                              <p className="mt-1 text-[10.5px] text-ink-faint">
+                                No baseline review stored for this row.
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </details>
+                    </td>
+                  </tr>
+                  </Fragment>
+                  );
+                })}
                 {overview.submissions.length === 0 && (
                   <tr>
                     <td colSpan={5} className="!py-8 text-center text-[11px] text-ink-soft">

@@ -62,11 +62,61 @@ export default async function CertificatePage({
     );
   }
 
+  // The AI score is a baseline for the student. Nothing printable exists until
+  // an organiser has read the submission and set the real score.
+  if (submission.review_status !== "approved") {
+    const baseline = submission.score ?? evaluation?.score ?? null;
+    return (
+      <div className="min-h-screen">
+        <header className="border-b border-line bg-paper">
+          <div className="shell flex h-[64px] items-center justify-between">
+            <Link href="/" className="display text-[28px] leading-none">ShipWeek</Link>
+            <Link href={`/thank-you/${registrant.ref_code}`} className="text-[12px] text-ink-soft hover:text-ink">
+              ← Back to your seat
+            </Link>
+          </div>
+        </header>
+        <main className="shell py-20">
+          <p className="eyebrow text-accent">Certificate</p>
+          <h1 className="display mt-3 max-w-[720px] text-[clamp(40px,6vw,64px)]">
+            With the organiser.
+          </h1>
+          <p className="mt-4 max-w-[520px] text-[14px] leading-relaxed text-ink-soft">
+            {submission.project_title} is submitted and waiting for a human review. The AI
+            below is only a baseline; the organiser reads the project, sets the real score
+            and issues the certificate.
+          </p>
+
+          <div className="mt-8 flex items-center gap-4 border border-line bg-[#fffdf7] p-5 sm:max-w-[420px]">
+            {baseline !== null ? (
+              <ScoreDial score={baseline} size={78} stroke={3} />
+            ) : (
+              <div className="flex h-[78px] w-[78px] items-center justify-center rounded-full border border-line text-[11px] text-ink-faint">
+                —
+              </div>
+            )}
+            <div>
+              <p className="eyebrow text-ink-faint">AI baseline</p>
+              <p className="mt-1 text-[11.5px] leading-relaxed text-ink-soft">
+                Not the final result. Your certificate appears here once the organiser
+                approves a score.
+              </p>
+            </div>
+          </div>
+
+          <Link href={`/thank-you/${registrant.ref_code}`} className="btn btn-ghost mt-6">
+            Back to your seat →
+          </Link>
+        </main>
+      </div>
+    );
+  }
+
   const certificateId = submission.certificate_id ?? `SW-26-${String(registrant.id).padStart(4, "0")}`;
   const certificateText =
     evaluation?.certificate_text ??
     `Built ${submission.project_title} and shipped it during ShipWeek.`;
-  const score = submission.score ?? evaluation?.score ?? null;
+  const score = submission.final_score ?? submission.score ?? evaluation?.score ?? null;
 
   return (
     <div className="certificate-page min-h-screen bg-[#e9e4d6]">
@@ -134,14 +184,14 @@ export default async function CertificatePage({
                 )}
                 <div>
                   <p className="eyebrow text-ink-faint">Project score</p>
-                  <p className="mt-1 text-[11px] text-ink-soft">AI-assisted review</p>
+                  <p className="mt-1 text-[11px] text-ink-soft">Set by the organiser</p>
                 </div>
               </div>
 
               <div>
-                <p className="eyebrow text-ink-faint">Issued</p>
+                <p className="eyebrow text-ink-faint">Reviewed</p>
                 <p className="mt-1 text-[12px] font-medium">
-                  {formatDate(submission.created_at)}
+                  {formatDate(submission.reviewed_at ?? submission.created_at)}
                 </p>
                 <p className="mt-0.5 text-[10px] text-ink-faint">Workshop: 6–8 Nov 2026</p>
               </div>
@@ -174,7 +224,8 @@ export default async function CertificatePage({
 
         <div className="no-print mx-auto mt-5 flex max-w-[980px] flex-wrap items-center justify-between gap-3">
           <p className="text-[10.5px] leading-relaxed text-ink-soft">
-            This certificate is generated from the submitted project record and the AI review.
+            Score set by the organiser after reading the submission. The AI baseline is kept
+            on the record and is not the final result.
             {submission.is_demo === 1 && (
               <span className="ml-2 inline-flex items-center gap-1">
                 <DemoTag /> Seeded demo submission.

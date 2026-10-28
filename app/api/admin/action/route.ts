@@ -36,6 +36,38 @@ export async function POST(request: Request) {
         .prepare("UPDATE registrants SET checked_in = 1 - checked_in WHERE id = ? AND is_demo = 0")
         .bind(id)
         .run();
+    } else if (action === "approve-submission") {
+      // The organiser's score is the result. It is stored separately from the AI
+      // baseline so the baseline can never be mistaken for the final score.
+      const score = Number(body.score);
+      if (!Number.isInteger(score) || score < 0 || score > 100) {
+        return Response.json(
+          { error: "Enter a whole-number score between 0 and 100." },
+          { status: 400 },
+        );
+      }
+      const updated = await db
+        .prepare(
+          "UPDATE submissions SET final_score = ?, review_status = 'approved', reviewed_at = ? WHERE registrant_id = ? AND is_demo = 0",
+        )
+        .bind(score, new Date().toISOString(), id)
+        .run();
+      if ((updated.meta.changes ?? 0) === 0) {
+        return Response.json({ error: "No live submission for that student." }, { status: 404 });
+      }
+      return Response.json({ ok: true, score });
+    } else if (action === "reset-submission") {
+      // Lets an organiser clear a submission that should never have been scored
+      // (placeholder text, a link back to this site). The student keeps their
+      // seat and can submit again; the old score and certificate stop existing.
+      const removed = await db
+        .prepare("DELETE FROM submissions WHERE registrant_id = ? AND is_demo = 0")
+        .bind(id)
+        .run();
+      if ((removed.meta.changes ?? 0) === 0) {
+        return Response.json({ error: "No live submission for that student." }, { status: 404 });
+      }
+      return Response.json({ ok: true, removed: removed.meta.changes });
     } else if (action === "captain") {
       const target = Math.max(5, Math.min(100, Number(body.target) || 20));
       await db

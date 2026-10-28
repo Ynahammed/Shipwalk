@@ -7,11 +7,13 @@ export function AdminAction({
   id,
   action,
   label,
+  confirmText,
   className = "text-[10px] font-semibold text-accent hover:underline disabled:opacity-50",
 }: {
   id: number;
-  action: "verify" | "checkin" | "captain";
+  action: "verify" | "checkin" | "captain" | "reset-submission";
   label: string;
+  confirmText?: string;
   className?: string;
 }) {
   const router = useRouter();
@@ -19,6 +21,7 @@ export function AdminAction({
   const [error, setError] = useState("");
 
   async function run() {
+    if (confirmText && !window.confirm(confirmText)) return;
     setPending(true);
     setError("");
     try {
