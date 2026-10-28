@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { AdminLoginForm } from "@/components/admin/AdminLoginForm";
-import { isAdmin } from "@/lib/auth";
+import { isAdmin, isAdminConfigured } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +12,7 @@ export const metadata: Metadata = {
 
 export default async function AdminLoginPage() {
   if (await isAdmin()) redirect("/admin");
+  const configured = await isAdminConfigured();
 
   return (
     <div className="relative flex min-h-screen flex-col">
@@ -29,12 +30,12 @@ export default async function AdminLoginPage() {
       </header>
 
       <main className="relative flex flex-1 items-center justify-center px-5 py-16">
-        <AdminLoginForm />
+        <AdminLoginForm configured={configured} />
       </main>
 
       <footer className="relative border-t border-line">
         <div className="shell py-4 text-[10px] text-ink-faint">
-          Preview data is seeded and labelled. Do not present it as a real campaign result.
+          Admin access requires an ADMIN_PASSCODE server secret on deployed environments.
         </div>
       </footer>
     </div>

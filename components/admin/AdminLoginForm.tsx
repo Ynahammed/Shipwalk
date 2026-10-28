@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ArrowRight } from "@/components/icons";
 
-export function AdminLoginForm() {
+export function AdminLoginForm({ configured = true }: { configured?: boolean }) {
   const router = useRouter();
   const [passcode, setPasscode] = useState("");
   const [error, setError] = useState("");
@@ -39,8 +39,9 @@ export function AdminLoginForm() {
         <p className="eyebrow text-accent">Admin access</p>
         <h1 className="display mt-2 text-[38px] leading-none">Growth OS</h1>
         <p className="mt-2 text-[11.5px] leading-relaxed text-ink-soft">
-          The dashboard holds student contact details. Use the organiser passcode; do not
-          share this URL publicly.
+          {configured
+            ? "The dashboard holds student contact details. Use the organiser passcode; do not share this URL publicly."
+            : "Admin access is disabled on this deployment. Set an ADMIN_PASSCODE secret in your hosting environment, then reload this page."}
         </p>
 
         <label htmlFor="passcode" className="label mt-5">Passcode</label>
@@ -60,13 +61,18 @@ export function AdminLoginForm() {
           </p>
         )}
 
-        <button type="submit" disabled={pending} className="btn btn-primary mt-4 w-full">
-          {pending ? "Checking…" : "Open dashboard"} {!pending && <ArrowRight />}
+        <button
+          type="submit"
+          disabled={pending || !configured}
+          className="btn btn-primary mt-4 w-full disabled:opacity-50"
+        >
+          {pending ? "Checking…" : "Open dashboard"} {!pending && configured && <ArrowRight />}
         </button>
 
         <p className="mt-3 text-center text-[10px] leading-relaxed text-ink-faint">
-          Preview build. Use the organiser passcode; set an ADMIN_PASSCODE secret before
-          sharing this dashboard.
+          {configured
+            ? "This dashboard is passcode-gated. Never share the passcode in public channels."
+            : "No passcode is configured, so this form cannot sign in."}
         </p>
       </div>
     </form>

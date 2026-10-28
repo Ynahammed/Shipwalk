@@ -4,6 +4,7 @@ import { ArrowUpRight, Check, SparkIcon } from "@/components/icons";
 import type { AdminOverview } from "@/lib/types";
 import { formatDate, maskEmail, percent, timeAgo } from "@/lib/utils";
 import { AdminAction } from "./AdminAction";
+import { AdminPurgeDemo } from "./AdminPurgeDemo";
 import { CopilotCard } from "./CopilotCard";
 import { FunnelBars } from "./FunnelBars";
 import { LogoutButton } from "./LogoutButton";
@@ -74,7 +75,7 @@ export function AdminDashboard({ overview }: { overview: AdminOverview }) {
             {totals.demoSubmissions} sample submissions are excluded from live totals. The funnel below
             uses live events only; {funnel.demoVisits.toLocaleString("en-IN")} seeded visits are examples, not results.
           </p>
-          <p className="mono text-[9px] text-[#96310f]/60">is_demo = 1</p>
+          <AdminPurgeDemo demoCount={totals.demo} />
         </div>
       </div>
 

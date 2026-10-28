@@ -9,7 +9,12 @@ export async function readJson(request: Request): Promise<Record<string, unknown
 
 export function normalizePhone(input: string): string | null {
   const digits = input.replace(/\D/g, "");
-  const local = digits.length === 12 && digits.startsWith("91") ? digits.slice(2) : digits;
+  const withoutTrunk =
+    digits.length === 11 && digits.startsWith("0") ? digits.slice(1) : digits;
+  const local =
+    withoutTrunk.length === 12 && withoutTrunk.startsWith("91")
+      ? withoutTrunk.slice(2)
+      : withoutTrunk;
   if (!/^[6-9]\d{9}$/.test(local)) return null;
   return local;
 }

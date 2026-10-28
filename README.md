@@ -4,7 +4,7 @@ A working implementation of the **Workshop Growth OS** architecture and build pl
 
 **Live preview:** https://site-fe0b5fbb10f54fb1b95fe7e206ddcdef.freebuff.page
 
-**Admin:** `/admin` · preview passcode `ship2026` (set `ADMIN_PASSCODE` before sharing).
+**Admin:** `/admin` · deployed environments require an `ADMIN_PASSCODE` secret; without one the dashboard is disabled rather than falling back to a published passcode. Local development falls back to `ship2026`.
 
 ---
 
@@ -122,7 +122,7 @@ Key fields on `registrants`: `ref_code` (own link), `referred_by` (code that bro
 
 ## Demo data disclosure
 
-Seeding is **opt-in** and off unless `DEMO_DATA=1`. Add that line to your local `.env` only; never set it on the live environment. When enabled and the database is empty, the first request inserts:
+Seeding is **opt-in** and off unless `DEMO_DATA=1` **and** the request is served from localhost. Add that line to your local `.env` only. The loopback check is deliberate: `next build` bakes local `.env` values into the deployed worker, so an env flag alone can read as set on a public host. When enabled and the database is empty, the first request inserts:
 
 - **236 registrants** across **12 colleges**, including **18 captains** with referral targets.
 - **4 project submissions** with scores and certificate text.
@@ -133,10 +133,25 @@ Every seeded registrant/submission has `is_demo = 1`. Behaviour:
 - Public seat counts, college rankings, pace, submission lists and the admin campaign funnel filter `is_demo = 0`; seeded rows never change a live number.
 - Demo-only colleges are omitted from rankings rather than shown as real standings.
 - The admin banner states how many demo rows and sample submissions are excluded, and any seeded certificate/thank-you page carries a **DEMO** badge.
+- The admin banner has a **Remove seeded demo rows** control that deletes demo registrations, submissions, captains, events and funnel history in one step. It is irreversible and only appears while demo rows exist.
+- A deployed (non-localhost) host also clears leftover demo rows automatically on first request, because demo seeding cannot run there any more. Synthetic rows never coexist with a live campaign.
 
 These are not real results. The 500 signup plan and ₹2,000 budget are planning assumptions reproduced from the source plan.
 
 ---
+
+## Tests
+
+```bash
+npm test
+```
+
+Two suites, no test framework dependency:
+
+- `tests/ranking.test.mjs` applies the real `SCHEMA_STATEMENTS` / `VIEW_STATEMENTS` from `lib/schema.ts` to a throwaway local D1 database, seeds a fixture campaign (email, self, organizer, pending and demo rows) and asserts the ranking contract: only email-link confirmations reach `leaderboard`/`college_rank`, self and organizer confirmations are excluded, demo-only colleges never rank, and a self-confirmed person has no rank.
+- `tests/helpers.test.mjs` covers signup validation and display helpers (email, Indian phone normalization including `+91`/leading-zero forms, referral-code charset, source allowlist, masking).
+
+A view or validation regression fails `npm test` instead of quietly inflating a public board.
 
 ## Local development
 
@@ -164,10 +179,12 @@ npx wrangler dev --config freebuff.wrangler.jsonc --port 8788
 - Workerd via `wrangler dev` (the real Workers runtime): home/leaderboard/kit/certificate `200`, CSS `200 text/css`, full signup → verify → submit → certificate flow, admin login and copilot, no worker exceptions.
 - Live Groq calls: all five components returned `source = "llm"` with `openai/gpt-oss-20b`; strict JSON Schema outputs were validated.
 - Live email call (before this switch): a Resend send returned `emailSent: true`, delivered with the subject “Your ShipWeek seat — confirm your email”, and the emailed token redirected `307` and marked the seat verified. The email layer now targets SMTP2GO; that sender is not yet exercised with a live key.
-- Deployed preview (updated free-tier build): `published = true`; `/api/idea`, `/api/share`, `/api/kit` and `/api/copilot` all returned `source = "llm"` with `openai/gpt-oss-20b`; the admin AI log shows the live rows.
-- Deployed preview: home `200`, `/api/stats` returns the seeded campaign, `/leaderboard`, `/kit`, `/certificate/harsh-124`, `/admin/login` all `200`, admin session returns the dashboard, CSS served as `text/css`.
+- Deployed preview (earlier build): `published = true`; `/api/idea`, `/api/share`, `/api/kit` and `/api/copilot` all returned `source = "llm"` with `openai/gpt-oss-20b`; the admin AI log showed live rows.
+- `npm test` — 14 passing: ranking contract against a throwaway D1 (email vs self/admin/pending/demo) and signup/display helper units.
+- Deployed preview (current build): home `/leaderboard` `/kit` `/admin/login` `200`, `/admin` redirects `307`; `/api/stats` reports `demo: 0` after the first request cleared leftover synthetic rows; the public host rejects the legacy `ship2026` passcode with `503`; `purge-demo` without a session returns `401`.
+- Local admin flow: wrong passcode `401`, correct passcode `200`, `purge-demo` removed 277 synthetic rows and `/api/stats` then reported `demo: 0`.
 
-Not verified: delivery through SMTP2GO (no verified single sender or key exists in this workspace yet; without both env values the thank-you page shows the demo link), payment/reward payouts (rewards are copy only, no money movement), and mobile Safari on a physical device.
+Not verified: delivery through SMTP2GO (its sender domain was rejected as unverified, so live signups fall back to browser self-confirmation), payment/reward payouts (rewards are copy only, no money movement), and mobile Safari on a physical device.
 
 ---
 
@@ -176,7 +193,7 @@ Not verified: delivery through SMTP2GO (no verified single sender or key exists 
 - **Tier D is not built:** 24h/1h reminder emails, per-college landing pages and the post-workshop showcase are out of scope, as the plan allows.
 - **Realtime is polling:** the leaderboard refreshes every 8 seconds rather than using WebSockets; the data is still live.
 - **Demo campaign dates are fixed:** `Nov 6–8, 2026`; seeded rows are excluded from the pace window entirely.
-- **Admin passcode defaults to `ship2026`** in the preview. Set `ADMIN_PASSCODE` before sharing the dashboard; the seeded data is demo, but live signups contain real contact details.
+- **Admin access is off by default on deployed workers.** `ADMIN_PASSCODE` must be set as a server secret. The fallback `ship2026` only works on localhost or when `DEMO_DATA=1`, so a published site cannot be opened with a passcode from the repo.
 - **SMTP2GO single-sender mode trades polish for no domain.** Mail from a verified single address has no SPF/DKIM alignment for that address, so Gmail can label it “via smtpcorp.com” and spam placement is more likely. The free plan allows 1,000 emails/month, 200/day and 25/hour while no sending domain is verified. Verifying a domain later removes the hourly cap and improves placement; no code change is needed, only a different sender address.
 - **Groq's free tier has rate limits** (published at 30 RPM / 1K requests per day for `openai/gpt-oss-20b`). The app falls back cleanly when a call is rate-limited; a busy live event may need a higher tier or a second provider.
 - **OpenNext warns on Windows.** The build completes; production runs on Linux.

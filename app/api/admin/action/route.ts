@@ -1,5 +1,5 @@
 import { isAdmin } from "@/lib/auth";
-import { getDb } from "@/lib/db";
+import { getDb, purgeDemoRows } from "@/lib/db";
 import { readJson } from "@/lib/utils";
 
 export async function POST(request: Request) {
@@ -10,12 +10,20 @@ export async function POST(request: Request) {
   try {
     const body = await readJson(request);
     const action = String(body.action ?? "");
+    const db = await getDb();
+
+    // One-way cleanup: removes the synthetic preview campaign (and only that)
+    // so a live deployment is left with real registrations only.
+    if (action === "purge-demo") {
+      const removed = await purgeDemoRows(db);
+      return Response.json({ ok: true, removed });
+    }
+
     const id = Number(body.id);
     if (!Number.isInteger(id) || id <= 0) {
       return Response.json({ error: "Invalid id." }, { status: 400 });
     }
 
-    const db = await getDb();
     if (action === "verify") {
       await db
         .prepare(
@@ -25,7 +33,7 @@ export async function POST(request: Request) {
         .run();
     } else if (action === "checkin") {
       await db
-        .prepare("UPDATE registrants SET checked_in = 1 - checked_in WHERE id = ?")
+        .prepare("UPDATE registrants SET checked_in = 1 - checked_in WHERE id = ? AND is_demo = 0")
         .bind(id)
         .run();
     } else if (action === "captain") {
@@ -45,4 +53,3 @@ export async function POST(request: Request) {
     return Response.json({ error: "Action failed." }, { status: 500 });
   }
 }
-
