@@ -1,6 +1,12 @@
 import type { PacePoint } from "@/lib/types";
 
-export function PaceChart({ pace }: { pace: PacePoint[] }) {
+export function PaceChart({
+  pace,
+  todayIndex = pace.length - 1,
+}: {
+  pace: PacePoint[];
+  todayIndex?: number;
+}) {
   const width = 660;
   const height = 260;
   const padding = { top: 18, right: 16, bottom: 34, left: 38 };
@@ -23,7 +29,8 @@ export function PaceChart({ pace }: { pace: PacePoint[] }) {
   } Z`;
 
   const gridValues = [0, 125, 250, 375, 500];
-  const last = pace[pace.length - 1];
+  const dayIndex = Math.max(0, Math.min(pace.length - 1, todayIndex));
+  const today = pace[dayIndex];
 
   return (
     <div>
@@ -35,7 +42,7 @@ export function PaceChart({ pace }: { pace: PacePoint[] }) {
           <span className="h-0 w-5 border-t border-dashed border-accent" /> 500 plan
         </span>
         <span className="ml-auto normal-case tracking-normal text-ink-faint">
-          Today: <strong className="text-ink">{last?.count ?? 0}</strong> signups
+          Today: <strong className="text-ink">{today?.count ?? 0}</strong> signups
         </span>
       </div>
 
@@ -70,8 +77,8 @@ export function PaceChart({ pace }: { pace: PacePoint[] }) {
             <circle
               cx={x(index)}
               cy={y(point.cumulative)}
-              r={index === pace.length - 1 ? 4.5 : 2.8}
-              fill={index === pace.length - 1 ? "#ff4a00" : "#161710"}
+              r={index === dayIndex ? 4.5 : 2.8}
+              fill={index === dayIndex ? "#ff4a00" : "#161710"}
               stroke="#fffdf7"
               strokeWidth="1.5"
             />
@@ -90,9 +97,9 @@ export function PaceChart({ pace }: { pace: PacePoint[] }) {
 
       <div className="mt-3 flex flex-wrap justify-between gap-2 border-t border-line pt-2.5 text-[10px] text-ink-faint">
         <span>
-          {last?.cumulative ?? 0} of 500 seats · {Math.round(((last?.cumulative ?? 0) / 500) * 100)}%
+          {today?.cumulative ?? 0} of 500 seats · {Math.round(((today?.cumulative ?? 0) / 500) * 100)}%
         </span>
-        <span>Plan target today: {last?.target ?? 500}</span>
+        <span>Plan target today: {today?.target ?? 500}</span>
       </div>
     </div>
   );

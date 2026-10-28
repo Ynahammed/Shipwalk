@@ -10,8 +10,12 @@ export async function POST() {
 
   try {
     const overview = await getAdminOverview();
-    const today = overview.pace[overview.pace.length - 1];
-    const yesterday = overview.pace[overview.pace.length - 2];
+    const planDay = Math.max(
+      1,
+      Math.min(overview.pace.length, overview.campaignDay),
+    );
+    const today = overview.pace[planDay - 1];
+    const yesterday = overview.pace[planDay - 2];
     const dailyTarget = Math.max(1, (today?.target ?? workshop.seats) - (yesterday?.target ?? 0));
     const daysLeft = Math.max(
       0,

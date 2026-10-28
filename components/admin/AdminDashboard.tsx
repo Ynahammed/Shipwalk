@@ -2,7 +2,7 @@ import Link from "next/link";
 import { DemoTag } from "@/components/DemoTag";
 import { ArrowUpRight, Check, SparkIcon } from "@/components/icons";
 import type { AdminOverview } from "@/lib/types";
-import { formatDate, maskEmail, percent, timeAgo } from "@/lib/utils";
+import { maskEmail, percent, timeAgo } from "@/lib/utils";
 import { AdminAction } from "./AdminAction";
 import { AdminPurgeDemo } from "./AdminPurgeDemo";
 import { CopilotCard } from "./CopilotCard";
@@ -30,8 +30,9 @@ function SourceTag({ source }: { source: string }) {
 
 export function AdminDashboard({ overview }: { overview: AdminOverview }) {
   const { totals, funnel, pace, sources, colleges, topReferrers } = overview;
-  const today = pace[pace.length - 1];
-  const yesterday = pace[pace.length - 2];
+  const planDay = Math.max(1, Math.min(pace.length, overview.campaignDay));
+  const today = pace[planDay - 1];
+  const yesterday = pace[planDay - 2];
   const dailyTarget = Math.max(1, (today?.target ?? 500) - (yesterday?.target ?? 0));
   const pacePct = percent(today?.count ?? 0, dailyTarget);
   const seatPct = percent(totals.total, overview.seatsTarget);
@@ -102,7 +103,14 @@ export function AdminDashboard({ overview }: { overview: AdminOverview }) {
                 Where the next 500 come from.
               </h1>
               <p className="mt-2 text-[11.5px] text-ink-soft">
-                {formatDate(new Date().toISOString())} · {totals.live} live signups +{" "}
+                {
+                  new Date().toLocaleDateString("en-IN", {
+                    day: "numeric",
+                    month: "short",
+                    timeZone: "Asia/Kolkata",
+                  })
+                }{" "}
+                · {totals.live} live signups +{" "}
                 {totals.demo} demo · campaign plan 500 by day 7
               </p>
             </div>
@@ -145,7 +153,7 @@ export function AdminDashboard({ overview }: { overview: AdminOverview }) {
                 <span className="text-[18px] text-ink-faint"> / {dailyTarget}</span>
               </p>
               <p className="mt-3 text-[10px] text-ink-soft">
-                {pacePct}% of today's target · plan day {pace.length}
+                {pacePct}% of today's target · plan day {planDay}
               </p>
               <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#e9e4d6]">
                 <div
@@ -214,7 +222,7 @@ export function AdminDashboard({ overview }: { overview: AdminOverview }) {
               <span className="tag">{seatPct}% of goal</span>
             </div>
             <div className="mt-4">
-              <PaceChart pace={pace} />
+              <PaceChart pace={pace} todayIndex={planDay - 1} />
             </div>
           </div>
 

@@ -6,7 +6,7 @@ const IDEAS: Idea[] = [
     pitch:
       "A mobile-first home screen that turns a messy class WhatsApp group into today's timetable, every deadline in one list, and a realistic 7-day study plan. One core loop: paste the group's messages, get a clean day plan.",
     why: "Every final-year student loses marks to missed deadlines, so the demo is instantly relatable in an interview.",
-    stack: ["Next.js", "Postgres", "An LLM for message cleanup", "Vercel"],
+    stack: ["Next.js", "D1", "Groq API for message cleanup", "Cloudflare Workers"],
     roadmap: [
       "Day 1: timetable + deadline input, one clean daily view",
       "Day 2: paste-a-message parser and the 7-day study plan",
@@ -18,7 +18,7 @@ const IDEAS: Idea[] = [
     pitch:
       "A voice mock-interview coach for one role. Pick a job description, answer five questions out loud, and get a scored transcript, filler-word count and a stronger rewrite of your weakest answer.",
     why: "It targets the exact anxiety placement season creates and gives you a live link to show recruiters.",
-    stack: ["Next.js", "Web Speech API", "An LLM", "Vercel"],
+    stack: ["Next.js", "Web Speech API", "Groq API", "Cloudflare Workers"],
     roadmap: [
       "Day 1: role picker, five-question flow, voice capture",
       "Day 2: transcript cleanup, scoring and answer rewrite",
@@ -30,7 +30,7 @@ const IDEAS: Idea[] = [
     pitch:
       "Bill splitting for student flats: photograph a grocery bill, assign items to roommates, and send one UPI request per person. Rent and wifi repeat automatically every month.",
     why: "It has a clear money-saving loop, a real user group (your own flat) and an obvious reason to reopen it monthly.",
-    stack: ["React", "Node or Next API routes", "Postgres", "A UPI deep link"],
+    stack: ["Next.js", "Next route handlers", "D1", "A UPI deep link"],
     roadmap: [
       "Day 1: create a flat, add roommates, manual bill entry",
       "Day 2: item assignment and one-tap UPI requests",
@@ -42,7 +42,7 @@ const IDEAS: Idea[] = [
     pitch:
       "Walk-in queue tracking for neighbourhood clinics. Patients see a live token and estimated wait before leaving home; the receptionist gets a one-screen queue they can actually run.",
     why: "It is a real operational problem, and the two-sided demo shows product thinking rather than another CRUD app.",
-    stack: ["Next.js", "Supabase Realtime", "Postgres", "Vercel"],
+    stack: ["Next.js", "D1", "5-second polling", "Cloudflare Workers"],
     roadmap: [
       "Day 1: queue and token flow for one clinic",
       "Day 2: wait-time estimate from recent consultation length",
@@ -54,7 +54,7 @@ const IDEAS: Idea[] = [
     pitch:
       "A mess-demand forecast for hostel kitchens. Import two weeks of plate counts, add the exam calendar, and get tomorrow's expected headcount plus the waste number it saves.",
     why: "It pairs a simple model with a dashboard a hostel office would act on, which is a strong story in a data interview.",
-    stack: ["Python", "FastAPI", "Postgres", "A simple regression model"],
+    stack: ["Next.js", "D1", "A weighted-average forecast", "Cloudflare Workers"],
     roadmap: [
       "Day 1: plate-count import and historical chart",
       "Day 2: forecast model with exam/holiday flags",
@@ -66,7 +66,7 @@ const IDEAS: Idea[] = [
     pitch:
       "A campus textbook and lab-kit exchange with a 60-second listing flow, a handoff spot map, and a search that actually understands course codes.",
     why: "It is local, trust-based and measurable: listings, completed handoffs and money saved are all demoable numbers.",
-    stack: ["Next.js", "Postgres", "Cloudinary or R2", "Vercel"],
+    stack: ["Next.js", "D1", "R2 for photos", "Cloudflare Workers"],
     roadmap: [
       "Day 1: listing flow plus course-code search",
       "Day 2: requests, chat-lite and handoff spots",
@@ -78,7 +78,7 @@ const IDEAS: Idea[] = [
     pitch:
       "Live college shuttle tracking with route ETAs, a driver view and a WhatsApp-group alert when the bus leaves the gate. Students stop guessing whether to wait or walk.",
     why: "It solves a daily, visible annoyance and gives you realtime features to talk about in interviews.",
-    stack: ["Next.js", "Supabase Realtime", "Leaflet", "Vercel"],
+    stack: ["Next.js", "Leaflet", "D1", "Cloudflare Workers"],
     roadmap: [
       "Day 1: one route, one bus, live map",
       "Day 2: ETA calculation and the departure alert",
@@ -90,7 +90,7 @@ const IDEAS: Idea[] = [
     pitch:
       "A hostel-block energy scoreboard that turns monthly electricity readings into a per-person carbon number and a weekly block-vs-block challenge.",
     why: "Sustainability plus a leaderboard is a rare combination: it shows data literacy and behaviour design in one demo.",
-    stack: ["Next.js", "Postgres", "A small charting library", "Vercel"],
+    stack: ["Next.js", "D1", "Recharts", "Cloudflare Workers"],
     roadmap: [
       "Day 1: reading input and per-block score",
       "Day 2: weekly challenge and shareable result card",
@@ -102,7 +102,7 @@ const IDEAS: Idea[] = [
     pitch:
       "Turn lecture notes or a PDF into a deck of spaced-repetition cards, with a daily five-minute review queue and a simple retention graph. The loop is notes in, cards out, recall tomorrow.",
     why: "It demonstrates retrieval, LLM output validation and a measurable learning result instead of a generic chatbot.",
-    stack: ["Next.js", "An LLM", "Postgres", "Vercel"],
+    stack: ["Next.js", "Groq API", "D1", "Cloudflare Workers"],
     roadmap: [
       "Day 1: upload, chunk and generate validated cards",
       "Day 2: review scheduler and retention tracking",
@@ -114,7 +114,7 @@ const IDEAS: Idea[] = [
     pitch:
       "Hyperlocal event tickets for campus and neighbourhood gigs: organiser page, UPI payment, one QR ticket and a door scanner that works offline.",
     why: "Payments, QR codes and an offline scanner give you three concrete technical stories from one small product.",
-    stack: ["Next.js", "Supabase", "UPI or Razorpay test mode", "Vercel"],
+    stack: ["Next.js", "D1", "UPI deep link", "Cloudflare Workers"],
     roadmap: [
       "Day 1: event page and free RSVP with QR",
       "Day 2: paid ticket and door scanner",
@@ -126,7 +126,7 @@ const IDEAS: Idea[] = [
     pitch:
       "A guided scheme finder for small farmers: five plain-language questions, a ranked list of state and central schemes, and a printable checklist of the documents needed for each.",
     why: "It shows you can turn messy public information into a usable decision tool, which is far more memorable than a clone.",
-    stack: ["Next.js", "Postgres", "An LLM for plain-language summaries", "Vercel"],
+    stack: ["Next.js", "D1", "Groq API for plain-language summaries", "Cloudflare Workers"],
     roadmap: [
       "Day 1: 25 schemes structured and searchable",
       "Day 2: question flow and document checklist",
@@ -138,7 +138,7 @@ const IDEAS: Idea[] = [
     pitch:
       "A campus bug bounty board where student clubs post small issues, developers claim them, and reviewers approve a fix. Points and a public fix streak make it social.",
     why: "It builds evidence of real contributions, and the reviewer/claim flow shows you can design permissions and state.",
-    stack: ["Next.js", "Postgres", "GitHub OAuth", "Vercel"],
+    stack: ["Next.js", "D1", "GitHub OAuth", "Cloudflare Workers"],
     roadmap: [
       "Day 1: post, claim and submit flows",
       "Day 2: reviewer approval, points and profiles",
@@ -150,7 +150,7 @@ const IDEAS: Idea[] = [
     pitch:
       "A attendance calculator that tells you exactly how many classes you can miss before you hit the threshold, per subject, with a calendar that accounts for holidays and labs.",
     why: "It is a tiny, sharable utility with a clear viral loop; the kind of project that gets used the same day in a hostel.",
-    stack: ["Next.js", "Local storage or Postgres", "An ICS export", "Vercel"],
+    stack: ["Next.js", "localStorage or D1", "An ICS export", "Cloudflare Workers"],
     roadmap: [
       "Day 1: subject setup and the can-I-skip calculator",
       "Day 2: holiday-aware calendar and ICS export",
@@ -162,7 +162,7 @@ const IDEAS: Idea[] = [
     pitch:
       "A company-specific placement question map: pick a target company, get its interview rounds, the topics most likely to appear, and a 10-day practice plan based on real student reports.",
     why: "It turns scattered placement gossip into a plan, and the structured data is the hard part you can show off.",
-    stack: ["Next.js", "Postgres", "An LLM for report summarisation", "Vercel"],
+    stack: ["Next.js", "D1", "Groq API for summaries", "Cloudflare Workers"],
     roadmap: [
       "Day 1: 10 companies and their round templates",
       "Day 2: report ingestion and topic weighting",
@@ -177,8 +177,50 @@ function hash(input: string): number {
   return Math.abs(h);
 }
 
+// Rough topic map so an offline response still answers the branch/interest the
+// student actually picked. Keywords are matched both ways ("health" ~ "healthcare").
+const IDEA_TAGS: Record<string, string[]> = {
+  CampusPilot: ["campus life", "productivity", "time management", "students", "study"],
+  PlacePrep: ["placement", "interview", "career", "jobs", "communication", "speaking"],
+  SplitSet: ["money", "finance", "budget", "flatmates", "hostel", "bills"],
+  ClinicQ: ["health", "healthcare", "clinic", "hospital", "queue", "waiting"],
+  MessMate: ["food", "mess", "canteen", "hostel", "waste", "sustainability", "data"],
+  SecondServe: ["books", "textbooks", "marketplace", "exchange", "reuse", "sustainability", "campus life"],
+  RouteRebel: ["transport", "bus", "travel", "commute", "maps", "logistics", "campus life"],
+  CarbonBlock: ["sustainability", "energy", "climate", "carbon", "environment", "electricity", "hostel"],
+  StudyLoop: ["study", "learning", "notes", "exams", "revision", "education", "flashcards", "ai"],
+  LocalLoop: ["events", "music", "tickets", "concert", "culture", "community", "payments"],
+  SchemeSetu: ["agriculture", "farmers", "rural", "government", "schemes", "policy", "social impact"],
+  BugBoard: ["coding", "programming", "developer", "software", "open source", "community"],
+  "Attendance Autopsy": ["attendance", "classes", "campus life", "productivity", "students"],
+  OfferLens: ["placement", "interview", "career", "jobs", "company", "preparation"],
+};
+
 export function fallbackIdea(branch: string, interest: string): Idea {
-  const idea = IDEAS[hash(`${branch}:${interest}`) % IDEAS.length];
+  const tokens = `${branch} ${interest}`
+    .toLowerCase()
+    .split(/[^a-z]+/)
+    .filter((token) => token.length > 3);
+
+  const scored = IDEAS.map((idea) => {
+    const tags = IDEA_TAGS[idea.title] ?? [];
+    const score = tags.reduce((sum, tag) => {
+      const lower = tag.toLowerCase();
+      return sum + (tokens.some((token) => lower.includes(token) || token.includes(lower)) ? 1 : 0);
+    }, 0);
+    return { idea, score };
+  });
+
+  const matched = scored.filter((entry) => entry.score > 0).sort((a, b) => b.score - a.score);
+  // Nothing on topic: stay in the student's world instead of returning a random app.
+  const generic = scored.filter((entry) => (IDEA_TAGS[entry.idea.title] ?? []).includes("campus life"));
+  const pool = matched.length
+    ? matched.slice(0, 3).map((entry) => entry.idea)
+    : generic.length
+      ? generic.map((entry) => entry.idea)
+      : IDEAS;
+
+  const idea = pool[hash(`${branch}:${interest}`) % pool.length];
   return {
     ...idea,
     pitch: idea.pitch.replace(/\s+/g, " ").trim(),

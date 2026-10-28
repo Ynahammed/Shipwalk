@@ -18,6 +18,18 @@ const API_BASE = "https://api.groq.com/openai/v1";
 const ALLOWED_MODELS = ["openai/gpt-oss-20b", "openai/gpt-oss-120b"];
 const DEFAULT_MODEL = "openai/gpt-oss-20b";
 
+// Rotated per request so repeated clicks do not return the same project.
+const ANGLES = [
+  "turn a repeated group decision into a fast vote with a visible result",
+  "help someone practise a skill and see progress across sessions",
+  "make a shared resource's availability visible before someone travels",
+  "replace a paper log with a live record that saves someone money",
+  "help a small local business see something they currently guess",
+  "turn scattered messages into one ranked list",
+  "measure something personal over weeks and show the trend",
+  "cut waste of money, food, or electricity where it is currently invisible",
+];
+
 // Strict schemas are enforced by Groq's constrained decoding. Every field is
 // required and no extra fields are allowed, so the validator still guards
 // array lengths and value ranges.
@@ -306,18 +318,59 @@ export async function generateIdea(
   interest: string,
 ): Promise<{ data: Idea; source: AiSource; model: string | null; error?: string }> {
   const fallback = fallbackIdea(branch, interest);
-  const system = `You are the project scout for ShipWeek, a free 3-day build sprint for final-year Indian college students. Give one project idea a single student can actually deploy in 3 days and defend in a placement interview. This is an individual sprint: no teams, mentors or hackathon framing.
+  const system = `You are the project scout for ShipWeek, a free 3-day build sprint for final-year Indian college students. Output exactly one project that a single student can build and deploy in three evenings (~3 hours each), then defend in a placement interview.
 
-Rules:
-- Software only, free-tier services, buildable by one person in 3 evenings.
-- Specific, not "an AI platform for X". It must have one core loop that can be demoed in 60 seconds.
-- No generic to-do, chat, or CRUD dashboard projects.
-- Use the student's branch/interest when it genuinely helps; never force hardware.
-- Roadmap has exactly 3 steps, one per day, each concrete.
-Return ONLY valid JSON in this exact shape, with no markdown:
-{"title":"...","pitch":"max 2 sentences","why":"one sentence on why this is a strong placement project","stack":["3-4 tools"],"roadmap":["Day 1: ...","Day 2: ...","Day 3: ..."]}`;
+THE STACK IS FIXED. Every idea runs on Next.js (App Router, TypeScript) + Tailwind deployed to Cloudflare Workers, with Cloudflare D1 when it must save data, plus browser APIs and at most one free, no-card external API. Never suggest Python, Flask/FastAPI, Streamlit, Django, Docker, Heroku (its free tier is gone), Firebase, Supabase, native iOS/Android builds, or training/fine-tuning a model. For Mechanical/Civil/Electrical branches, still use this web stack on a problem from that field — never invent hardware the student does not own.
 
-  const user = `Branch: ${branch}\nInterest: ${interest}\nLocation: India\nBudget: free tiers only\nTime: 3 days, roughly 3 hours a day`;
+SCOPE BUDGET: one core loop, at most three screens, no accounts needed for the demo path, no admin panel, no payments, no real-time collaboration. A visitor must reach the core loop without signing up. The idea must involve something that changes over time — a queue, a schedule, a history, a running total — so it is never a one-shot calculator.
+
+SPECIFICITY CONTRACT:
+- Decide the exact user and the moment they open it ("a final-year student the night before a placement shortlist"), but keep that framing out of the pitch.
+- pitch: at most 2 sentences describing the product itself — what the user does in one action and what they get back. Never open with "A final-year student..." and never describe a persona wanting something. Never "an AI platform for X" or "a dashboard for Y".
+- The core loop must produce something worth looking at: a ranking, a schedule, a map, a score, a matched pair, a cost number, a before/after. A form that writes one row and flips a status is not an idea.
+- Coordinate at least two kinds of records (people and slots, entries and votes, items and claims, history and a deadline) and compute a result nobody could read off one row. One person logging their own numbers is a diary, not a project.
+- Vary the hard part: matching, scheduling under constraints, deduplication, forecasting from history, or ranking. Do not default to offline sync or IndexedDB unless the idea truly needs it.
+- why: name the single hardest part they will build and the interview question it prepares them to answer. Never "showcases full-stack skills".
+- roadmap: exactly 3 items, each starting "Day 1:", "Day 2:", "Day 3:" — Day 1 the core loop on seed data, Day 2 the hard part, Day 3 deploy plus a 60-second demo. No tests, Docker, auth or polish filler.
+
+BANNED, because every interviewer has seen them or they are too thin: to-do lists, chat apps, quiz apps, weather apps, URL shorteners, QR generators, link-in-bio pages, countdown timers, resume builders, generic CRUD/admin dashboards, simple approval-status trackers, personal expense/habit/calorie/mood trackers, diabetes/loan/house-price/crop-yield predictors, sentiment-analysis demos, "AI chatbot for college FAQ".
+
+The branch matters only when it genuinely changes the problem; otherwise build around the interest. The idea must differ from every title in the avoid list. Do not default to campus queues, QR codes or booking forms; a QR scan or ticket is at most one small detail inside the loop, never the idea itself.`;
+
+  let avoid: string[] = [];
+  try {
+    const db = await getDb();
+    const recent = await db
+      .prepare(
+        "SELECT idea_json FROM project_ideas WHERE branch = ? ORDER BY id DESC LIMIT 4",
+      )
+      .bind(branch)
+      .all<{ idea_json: string }>();
+    avoid = (recent.results ?? [])
+      .map((row) => {
+        try {
+          return (JSON.parse(row.idea_json) as Idea).title;
+        } catch {
+          return "";
+        }
+      })
+      .filter((title) => title.length > 0);
+  } catch {
+    // Variety is a nice-to-have; never fail the request over it.
+  }
+
+  const angle = ANGLES[Math.floor(Math.random() * ANGLES.length)];
+  const user = [
+    `Branch: ${branch}`,
+    `Interest: ${interest}`,
+    "Location: India, mid-range Android phone, patchy data",
+    "Budget: free tiers only, no credit card",
+    "Time: 3 evenings, roughly 3 hours each",
+    `Angle for this idea: ${angle}`,
+    avoid.length > 0 ? `Do not repeat these: ${avoid.join("; ")}` : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
 
   const result = await withAi({
     component: "project-idea",

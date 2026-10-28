@@ -28,15 +28,32 @@ Prompt and output rows are still written to `prompt_logs`, so the admin AI log n
 
 **What I asked**
 
-> You are the project scout for ShipWeek, a free 3-day build sprint for final-year Indian college students. Give one project idea a single student can actually deploy in 3 days and defend in a placement interview.
+> You are the project scout for ShipWeek… Output exactly one project that a single student can build and deploy in three evenings (~3 hours each), then defend in a placement interview.
 >
-> Rules:
-> - Software only, free-tier services, buildable by one person in 3 evenings.
-> - Specific, not "an AI platform for X". It must have one core loop that can be demoed in 60 seconds.
-> - No generic to-do, chat, or CRUD dashboard projects.
-> - Use the student's branch/interest when it genuinely helps; never force hardware.
-> - Roadmap has exactly 3 steps, one per day, each concrete.
+> THE STACK IS FIXED: Next.js (App Router, TypeScript) + Tailwind on Cloudflare Workers, D1 when it must save data, browser APIs, and at most one free no-card external API. Never Python, Flask/FastAPI, Streamlit, Django, Docker, Heroku, Firebase, Supabase, native mobile, or training a model.
+>
+> SCOPE BUDGET: one core loop, at most three screens, no accounts on the demo path, no admin panel, no payments, no real-time collaboration — and the idea must involve something that changes over time, never a one-shot calculator.
+>
+> SPECIFICITY: pitch is 2 sentences about the product itself (never "A final-year student wants…"), the `why` names the hardest part and the interview question it answers, and the roadmap is Day 1 core loop → Day 2 hard part → Day 3 deploy and demo.
+>
+> BANNED: to-do, chat, quiz, weather, URL shorteners, QR generators, link-in-bio, countdown timers, resume builders, CRUD dashboards, approval-status trackers, personal expense/habit/calorie trackers, diabetes/loan/house-price predictors, sentiment demos, college-FAQ chatbots.
+>
 > Return ONLY valid JSON in this exact shape: `{"title","pitch","why","stack":[],"roadmap":[]}`.
+
+**Why it changed**
+
+I sampled four branches against the first prompt and the outputs were wrong in a way the schema could not catch: `Python + FastAPI + Heroku + Docker`, a 3-day CV/ML training project, and a CRUD maintenance tracker the prompt had already banned. Heroku has no free tier, and none of it runs on the stack the workshop teaches, so a student following the idea would have been stuck on day one.
+
+The fix is a hard stack lock, an explicit scope budget, a ban on persona-style pitches and thin utilities, and a rotating set of problem angles so repeated clicks do not return one idea. Recent titles for the same branch are read from `project_ideas` and passed as an avoid list.
+
+| Branch / interest | Before | After |
+| --- | --- | --- |
+| CSE · music | SongLyric Sync (FastAPI + FFmpeg + Render) | JamRoom Queue (Next.js + D1) |
+| Mechanical · campus life | Campus Machinery Maintenance Tracker (Firebase CRUD) | Campus Parking Optimizer (Next.js + D1, graph search) |
+| ECE · sports | Smart Penalty Kick Analyzer (MediaPipe + OpenCV in 3 days) | Court booking with conflict detection (Next.js + D1) |
+| AI & ML · health | Diabetes Risk Predictor (Flask + Heroku) | Queue risk score + wait estimate (Next.js + D1) |
+
+**Known limit:** Groq's free tier allows 30 requests/minute, so a burst of generations falls back. The 14 curated ideas are now tagged by topic (`IDEA_TAGS`) and matched against branch/interest instead of being picked at random; an ECE/sports student no longer receives a flatmate bill-splitting app.
 
 **What it returned (curated fallback, logged)**
 
@@ -49,7 +66,7 @@ Prompt and output rows are still written to `prompt_logs`, so the admin AI log n
 **What I changed**
 
 - The prompt alone is not enough to trust the output. I added a runtime shape check (`title`, `pitch`, `why`, `stack[2..6]`, `roadmap[2..4]`). Anything else is rejected and logged as `llm-invalid`.
-- The app never blocks on the model. Fourteen curated ideas cover branch/interest combinations, and the UI labels a fallback **"Curated demo"** rather than pretending it came from a model.
+- The app never blocks on the model. Fourteen curated ideas cover branch/interest combinations, tagged so the offline pick stays on topic, and the UI labels a fallback **"Curated demo"** rather than pretending it came from a model.
 - I rejected the first instinct to ask for "5 ideas". One idea forces scope. The 3-day constraint is in the prompt and in the roadmap schema.
 - The signup carries the idea into the account (`registrants.idea_json`) so the thank-you page can reflect it back. The idea is not lost when the visitor converts.
 
